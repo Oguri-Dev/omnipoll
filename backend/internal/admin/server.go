@@ -51,6 +51,19 @@ func NewServerWithoutStatic(cfg *config.Manager, worker *poller.Worker) *Server 
 	}
 }
 
+// NewServerWithFilesystem creates a server serving static files from filesystem
+func NewServerWithFilesystem(cfg *config.Manager, worker *poller.Worker, staticDir string) *Server {
+	var staticFS fs.FS
+	if _, err := os.Stat(staticDir); err == nil {
+		staticFS = os.DirFS(staticDir)
+	}
+	return &Server{
+		configManager: cfg,
+		worker:        worker,
+		staticFS:      staticFS,
+	}
+}
+
 // Start starts the HTTP server
 func (s *Server) Start() error {
 	cfg := s.configManager.Get()
