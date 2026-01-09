@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"log"
 	"net/http"
 	"os"
@@ -13,6 +14,9 @@ import (
 	"github.com/omnipoll/backend/internal/config"
 	"github.com/omnipoll/backend/internal/poller"
 )
+
+//go:embed web/dist/*
+var staticFiles embed.FS
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -45,7 +49,10 @@ func main() {
 	}()
 
 	// Create admin server
-	adminServer := admin.NewServerWithoutStatic(cfgManager, worker)
+	adminServer, err := admin.NewServer(cfgManager, worker, staticFiles)
+	if err != nil {
+		log.Fatalf("Failed to create admin server: %v", err)
+	}
 
 	// Start admin server in goroutine
 	go func() {
