@@ -1,10 +1,21 @@
 package akva
 
 import (
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/omnipoll/backend/internal/events"
 )
+
+// sanitizeString removes invalid UTF-8 characters
+func sanitizeString(s string) string {
+	if utf8.ValidString(s) {
+		return s
+	}
+	// Remove invalid UTF-8 sequences
+	return strings.ToValidUTF8(s, "")
+}
 
 // Mapper transforms SQL rows to normalized events
 
@@ -16,14 +27,14 @@ func ToNormalizedEvent(record DetalleAlimentacion) events.NormalizedEvent {
 	}
 
 	return events.NormalizedEvent{
-		ID:            record.ID,
+		ID:            sanitizeString(record.ID),
 		Source:        "akva",
-		Name:          record.Name,
-		UnitName:      record.UnitName,
+		Name:          sanitizeString(record.Name),
+		UnitName:      sanitizeString(record.UnitName),
 		FechaHora:     record.FechaHora.UTC().Format(time.RFC3339),
 		Dia:           diaStr,
-		Inicio:        record.Inicio,
-		Fin:           record.Fin,
+		Inicio:        sanitizeString(record.Inicio),
+		Fin:           sanitizeString(record.Fin),
 		Dif:           record.Dif,
 		AmountGrams:   record.AmountGrams,
 		PelletFishMin: record.PelletFishMin,
@@ -31,9 +42,9 @@ func ToNormalizedEvent(record DetalleAlimentacion) events.NormalizedEvent {
 		PesoProm:      record.PesoProm,
 		Biomasa:       record.Biomasa,
 		PelletPK:      record.PelletPK,
-		FeedName:      record.FeedName,
-		SiloName:      record.SiloName,
-		DoserName:     record.DoserName,
+		FeedName:      sanitizeString(record.FeedName),
+		SiloName:      sanitizeString(record.SiloName),
+		DoserName:     sanitizeString(record.DoserName),
 		GramsPerSec:   record.GramsPerSec,
 		KgTonMin:      record.KgTonMin,
 		Marca:         record.Marca,
