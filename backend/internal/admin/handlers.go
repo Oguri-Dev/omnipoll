@@ -305,10 +305,19 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if events == nil {
-		events = []interface{}{}
+	// Transform MongoDB HistoricalEvent to frontend-friendly format
+	response := make([]map[string]interface{}, 0, len(events))
+	for _, evt := range events {
+		response = append(response, map[string]interface{}{
+			"_id":        evt.ID,
+			"source":     evt.Source,
+			"fechaHora":  evt.FechaHora.Format(time.RFC3339),
+			"unitName":   evt.UnitName,
+			"payload":    evt.Payload,
+			"ingestedAt": evt.IngestedAt.Format(time.RFC3339),
+		})
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(events)
+	json.NewEncoder(w).Encode(response)
 }
