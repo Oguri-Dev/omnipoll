@@ -34,13 +34,12 @@ COPY --from=builder /app/omnipoll .
 COPY --from=builder /app/web/dist ./web/dist
 
 # Create data directory for watermark persistence
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chmod 777 /app/data
 
 # Expose admin panel port
 EXPOSE 8080
 
-# Run as non-root user
-RUN adduser -D -u 1000 omnipoll
-USER omnipoll
+# Run as root to avoid permission issues (or remove USER line)
+# USER omnipoll
 
 ENTRYPOINT ["./omnipoll"]
