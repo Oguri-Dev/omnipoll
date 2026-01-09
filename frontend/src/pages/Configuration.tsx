@@ -91,7 +91,7 @@ export default function Configuration() {
 }
 
 // Config form components (simplified)
-function SQLServerConfig({ config, onSave, onTest }: any) {
+function SQLServerConfig({ config, onTest }: any) {
   return (
     <form className="space-y-4">
       <h3 className="text-lg font-medium">SQL Server Configuration</h3>
@@ -134,7 +134,7 @@ function SQLServerConfig({ config, onSave, onTest }: any) {
   )
 }
 
-function MQTTConfig({ config, onSave, onTest }: any) {
+function MQTTConfig({ config, onTest }: any) {
   return (
     <form className="space-y-4">
       <h3 className="text-lg font-medium">MQTT Configuration</h3>
@@ -187,7 +187,7 @@ function MQTTConfig({ config, onSave, onTest }: any) {
   )
 }
 
-function MongoDBConfig({ config, onSave, onTest }: any) {
+function MongoDBConfig({ config, onTest }: any) {
   return (
     <form className="space-y-4">
       <h3 className="text-lg font-medium">MongoDB Configuration</h3>
@@ -223,7 +223,7 @@ function MongoDBConfig({ config, onSave, onTest }: any) {
   )
 }
 
-function PollingConfig({ config, onSave }: any) {
+function PollingConfig({ config }: any) {
   return (
     <form className="space-y-4">
       <h3 className="text-lg font-medium">Polling Configuration</h3>

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Database, Radio, HardDrive, Activity, Play, Square, RotateCcw } from 'lucide-react'
+import { Database, Radio, Activity, Play, Square, RotateCcw } from 'lucide-react'
 import StatusCard from '../components/StatusCard'
 import ConnectionStatus from '../components/ConnectionStatus'
 import { api } from '../services/api'
