@@ -31,7 +31,8 @@ logs/
 !package.json
 !tsconfig.json
 !tsconfig.node.json
-data/
+backend/data/
+!backend/data/config.yaml
 
 # Compiled
 *.exe
