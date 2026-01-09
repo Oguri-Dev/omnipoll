@@ -257,26 +257,6 @@ func (w *Worker) logEntry(level, message string) {
 	w.mu.Unlock()
 }
 
-// GetRecentEvents returns recent events from MongoDB
-func (w *Worker) GetRecentEvents(ctx context.Context, limit int) ([]interface{}, error) {
-	if w.mongoRepo == nil {
-		return []interface{}{}, nil
-	}
-
-	events, err := w.mongoRepo.GetRecentEvents(ctx, limit)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert to interface slice for JSON serialization
-	result := make([]interface{}, len(events))
-	for i, e := range events {
-		result[i] = e
-	}
-
-	return result, nil
-}
-
 // Shutdown gracefully shuts down the worker
 func (w *Worker) Shutdown(ctx context.Context) {
 	w.Stop()
