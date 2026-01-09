@@ -13,8 +13,12 @@ RUN go mod download
 # Copy source code
 COPY . .
 
-# Build binary
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o omnipoll ./cmd/omnipoll
+# Ensure web/dist is present (will be copied before build)
+RUN if [ ! -d "web/dist" ]; then echo "ERROR: web/dist not found. Run 'cp -r frontend/dist backend/web/' before building"; exit 1; fi
+
+# Build binary from cmd/omnipoll (which has embed directive)
+WORKDIR /app/cmd/omnipoll
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/omnipoll .
 
 # Runtime stage
 FROM alpine:3.19

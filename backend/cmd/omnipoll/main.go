@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"log"
 	"net/http"
 	"os"
@@ -9,11 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/omnipoll/backend"
 	"github.com/omnipoll/backend/internal/admin"
 	"github.com/omnipoll/backend/internal/config"
 	"github.com/omnipoll/backend/internal/poller"
 )
+
+//go:embed all:web/dist
+var staticFiles embed.FS
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
