@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+backend/bin/
+backend/web/dist/
+frontend/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Data files
+*.json
+!package.json
+!tsconfig.json
+!tsconfig.node.json
+data/
+
+# Compiled
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test
+coverage/
+*.test

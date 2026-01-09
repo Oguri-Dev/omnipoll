@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  omnipoll:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - OMNIPOLL_MASTER_KEY=${OMNIPOLL_MASTER_KEY:-change-this-key}
+      - OMNIPOLL_CONFIG_PATH=/app/data/config.yaml
+      - OMNIPOLL_WATERMARK_PATH=/app/data/watermark.json
+    volumes:
+      - omnipoll_data:/app/data
+      - ./backend/data/config.yaml:/app/data/config.yaml
+    depends_on:
+      - mongodb
+      - mosquitto
+    restart: unless-stopped
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+  mongodb:
+    image: mongo:7
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - '1883:1883'
+      - '9001:9001'
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    restart: unless-stopped
+
+volumes:
+  omnipoll_data:
+  mongodb_data:
+  mosquitto_data:
+  mosquitto_log:

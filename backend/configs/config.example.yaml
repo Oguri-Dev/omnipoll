@@ -1,0 +1,33 @@
+# Omnipoll Configuration Example
+# Copy this file to config.yaml and update values
+
+sqlServer:
+  host: 'localhost'
+  port: 1433
+  database: 'FTFeeding'
+  user: 'sa'
+  password: 'encrypted:xxxxxxxx'
+
+mqtt:
+  broker: 'localhost'
+  port: 1883
+  topic: 'ftfeeding/akva/detalle'
+  clientId: 'omnipoll-worker'
+  user: ''
+  password: ''
+  qos: 1
+
+mongodb:
+  uri: 'mongodb://localhost:27017'
+  database: 'omnipoll'
+  collection: 'historical_events'
+
+polling:
+  intervalMs: 5000
+  batchSize: 100
+
+admin:
+  host: '127.0.0.1'
+  port: 8080
+  username: 'admin'
+  password: 'encrypted:xxxxxxxx'
