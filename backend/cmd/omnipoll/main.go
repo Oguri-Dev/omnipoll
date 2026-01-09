@@ -15,7 +15,7 @@ import (
 	"github.com/omnipoll/backend/internal/poller"
 )
 
-//go:embed web/dist/*
+//go:embed ../../web/dist/*
 var staticFiles embed.FS
 
 func main() {
