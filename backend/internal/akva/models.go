@@ -14,7 +14,7 @@ type DetalleAlimentacion struct {
 	Dif           int       `db:"dif"`
 	AmountGrams   float64   `db:"AmountGrams"`
 	PelletFishMin float64   `db:"pelletfishmin"`
-	FishCount     int       `db:"FisCount"`
+	FishCount     float64   `db:"FisCount"`
 	PesoProm      float64   `db:"PesoProm"`
 	Biomasa       float64   `db:"Biomasa"`
 	PelletPK      float64   `db:"pelletpK"`

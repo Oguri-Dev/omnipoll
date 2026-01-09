@@ -15,7 +15,7 @@ type NormalizedEvent struct {
 	Dif           int       `json:"dif"`
 	AmountGrams   float64   `json:"amountGrams"`
 	PelletFishMin float64   `json:"pelletFishMin"`
-	FishCount     int       `json:"fishCount"`
+	FishCount     float64   `json:"fishCount"`
 	PesoProm      float64   `json:"pesoProm"`
 	Biomasa       float64   `json:"biomasa"`
 	PelletPK      float64   `json:"pelletPK"`
