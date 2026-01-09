@@ -230,6 +230,14 @@ func (w *Worker) GetLogs() []events.LogEntry {
 	return w.logs
 }
 
+// GetRecentEvents returns recent events from MongoDB
+func (w *Worker) GetRecentEvents(ctx context.Context, limit int) ([]mongo.HistoricalEvent, error) {
+	if w.mongoRepo == nil {
+		return []mongo.HistoricalEvent{}, nil
+	}
+	return w.mongoRepo.GetRecentEvents(ctx, limit)
+}
+
 // logEntry adds a log entry
 func (w *Worker) logEntry(level, message string) {
 	entry := events.LogEntry{
