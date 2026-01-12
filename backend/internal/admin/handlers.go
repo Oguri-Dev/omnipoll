@@ -46,6 +46,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	if s.worker != nil {
 		log.Println("[DEBUG] handleStatus: Calling IsRunning")
 		workerRunning = s.worker.IsRunning()
+		log.Printf("[DEBUG] handleStatus: IsRunning returned: %v", workerRunning)
 		log.Println("[DEBUG] handleStatus: Calling GetStats")
 		stats := s.worker.GetStats()
 		log.Println("[DEBUG] handleStatus: GetStats returned")
@@ -58,6 +59,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		sqlConnected = stats.SQLConnected
 		mqttConnected = stats.MQTTConnected
 		mongoConnected = stats.MongoConnected
+		log.Println("[DEBUG] handleStatus: Stats processed")
 	}
 
 	resp := StatusResponse{
