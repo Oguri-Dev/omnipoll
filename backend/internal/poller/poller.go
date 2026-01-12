@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/omnipoll/backend/internal/akva"
@@ -21,6 +22,7 @@ type Poller struct {
 	mongoRepo  *mongo.Repository
 	watermark  *WatermarkManager
 	stats      *Stats
+	statsMu    sync.RWMutex
 }
 
 // Stats tracks polling statistics
@@ -129,6 +131,9 @@ func (p *Poller) Poll(ctx context.Context) error {
 
 // updateStats updates polling statistics
 func (p *Poller) updateStats(lastFechaHora time.Time, newEvents int64) {
+	p.statsMu.Lock()
+	defer p.statsMu.Unlock()
+	
 	p.stats.LastFechaHora = lastFechaHora
 	p.stats.EventsToday += newEvents
 	p.stats.TotalEvents += newEvents
@@ -149,11 +154,14 @@ func (p *Poller) updateStats(lastFechaHora time.Time, newEvents int64) {
 
 // GetStats returns current statistics
 func (p *Poller) GetStats() Stats {
-	// Return cached stats - connection checks are done during polling
-	// to avoid mutex deadlocks when this is called from HTTP handlers
+	p.statsMu.RLock()
+	defer p.statsMu.RUnlock()
 	return *p.stats
 }
-
+p.statsMu.Lock()
+	defer p.statsMu.Unlock()
+	
+	
 // RefreshStats refreshes statistics from MongoDB
 func (p *Poller) RefreshStats(ctx context.Context) {
 	if total, err := p.mongoRepo.CountEvents(ctx); err == nil {
