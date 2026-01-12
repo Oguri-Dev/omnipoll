@@ -145,9 +145,37 @@ func (p *Poller) updateStats(lastFechaHora time.Time, newEvents int64) {
 // GetStats returns current statistics
 func (p *Poller) GetStats() Stats {
 	stats := *p.stats
-	stats.SQLConnected = p.akvaClient.IsConnected()
-	stats.MQTTConnected = p.mqttPub.IsConnected()
-	stats.MongoConnected = p.mongoRepo.IsConnected()
+	
+	// Check connections with timeout to avoid blocking
+	type connStatus struct {
+		sql   bool
+		mqtt  bool
+		mongo bool
+	}
+	
+	resultChan := make(chan connStatus, 1)
+	go func() {
+		result := connStatus{
+			sql:   p.akvaClient != nil && p.akvaClient.IsConnected(),
+			mqtt:  p.mqttPub != nil && p.mqttPub.IsConnected(),
+			mongo: p.mongoRepo != nil && p.mongoRepo.IsConnected(),
+		}
+		resultChan <- result
+	}()
+	
+	// Wait max 2 seconds for connection checks
+	select {
+	case result := <-resultChan:
+		stats.SQLConnected = result.sql
+		stats.MQTTConnected = result.mqtt
+		stats.MongoConnected = result.mongo
+	case <-time.After(2 * time.Second):
+		// Timeout - return stats without connection status
+		stats.SQLConnected = false
+		stats.MQTTConnected = false
+		stats.MongoConnected = false
+	}
+	
 	return stats
 }
 

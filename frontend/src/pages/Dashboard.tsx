@@ -7,7 +7,12 @@ import { api } from '../services/api'
 export default function Dashboard() {
   const queryClient = useQueryClient()
 
-  const { data: status, isLoading, isError, error } = useQuery({
+  const {
+    data: status,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['status'],
     queryFn: api.getStatus,
     refetchInterval: 5000,
