@@ -27,6 +27,7 @@ type Worker struct {
 	mqttPub       *mqtt.Publisher
 	mongoClient   *mongo.Client
 	mongoRepo     *mongo.Repository
+	logsMu        sync.Mutex
 	logs          []events.LogEntry
 	maxLogs       int
 }
@@ -232,8 +233,8 @@ func (w *Worker) TestMongoConnection() (bool, error) {
 
 // GetLogs returns recent log entries
 func (w *Worker) GetLogs() []events.LogEntry {
-	w.mu.RLock()
-	defer w.mu.RUnlock()
+	w.logsMu.Lock()
+	defer w.logsMu.Unlock()
 	return w.logs
 }
 
