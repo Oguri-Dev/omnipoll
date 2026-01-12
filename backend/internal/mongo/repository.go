@@ -132,3 +132,35 @@ func (r *Repository) GetRecentEvents(ctx context.Context, limit int) ([]Historic
 
 	return events, nil
 }
+
+// GetEventsByIDs returns events by their IDs for change comparison
+func (r *Repository) GetEventsByIDs(ctx context.Context, source string, ids []string) (map[string]HistoricalEvent, error) {
+	if len(ids) == 0 {
+		return make(map[string]HistoricalEvent), nil
+	}
+
+	// Build MongoDB IDs (source:id format)
+	mongoIDs := make([]string, len(ids))
+	for i, id := range ids {
+		mongoIDs[i] = fmt.Sprintf("%s:%s", source, id)
+	}
+
+	filter := bson.M{"_id": bson.M{"$in": mongoIDs}}
+	cursor, err := r.client.GetCollection().Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	result := make(map[string]HistoricalEvent)
+	for cursor.Next(ctx) {
+		var event HistoricalEvent
+		if err := cursor.Decode(&event); err != nil {
+			return nil, err
+		}
+		// Use the original ID (without source prefix) as key
+		result[event.ID] = event
+	}
+
+	return result, nil
+}

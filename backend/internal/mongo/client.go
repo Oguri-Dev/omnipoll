@@ -31,8 +31,8 @@ func NewClient(cfg config.MongoDBConfig) *Client {
 func (c *Client) Connect(ctx context.Context) error {
 	clientOpts := options.Client().
 		ApplyURI(c.config.URI).
-		SetConnectTimeout(30 * time.Second).
-		SetServerSelectionTimeout(30 * time.Second)
+		SetConnectTimeout(5 * time.Second).
+		SetServerSelectionTimeout(5 * time.Second)
 
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {

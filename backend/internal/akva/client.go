@@ -26,7 +26,7 @@ func NewClient(cfg config.SQLServerConfig) *Client {
 // Connect establishes connection to SQL Server
 func (c *Client) Connect(ctx context.Context) error {
 	connString := fmt.Sprintf(
-		"server=%s;port=%d;database=%s;user id=%s;password=%s;encrypt=disable;connection timeout=30",
+		"server=%s;port=%d;database=%s;user id=%s;password=%s;encrypt=disable;connection timeout=3",
 		c.config.Host,
 		c.config.Port,
 		c.config.Database,

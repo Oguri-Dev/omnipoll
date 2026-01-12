@@ -61,7 +61,7 @@ func (c *Client) Connect() error {
 	client := paho.NewClient(opts)
 
 	token := client.Connect()
-	if token.WaitTimeout(30 * time.Second) && token.Error() != nil {
+	if token.WaitTimeout(5 * time.Second) && token.Error() != nil {
 		return fmt.Errorf("failed to connect to MQTT broker: %w", token.Error())
 	}
 

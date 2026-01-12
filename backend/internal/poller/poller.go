@@ -2,11 +2,13 @@ package poller
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/omnipoll/backend/internal/akva"
 	"github.com/omnipoll/backend/internal/config"
+	"github.com/omnipoll/backend/internal/events"
 	"github.com/omnipoll/backend/internal/mongo"
 	"github.com/omnipoll/backend/internal/mqtt"
 )
@@ -76,12 +78,22 @@ func (p *Poller) Poll(ctx context.Context) error {
 	// Convert to normalized events
 	events := akva.ToNormalizedEvents(records)
 
-	// Publish to MQTT
-	if err := p.mqttPub.PublishBatch(events); err != nil {
-		return err
+	// Filter only changed/new events for MQTT publishing
+	changedEvents, err := p.filterChangedEvents(ctx, events)
+	if err != nil {
+		log.Printf("Warning: failed to filter changed events: %v", err)
+		changedEvents = events // Fallback: publish all if filtering fails
 	}
 
-	log.Printf("Published %d events to MQTT", len(events))
+	// Publish only changed events to MQTT
+	if len(changedEvents) > 0 {
+		if err := p.mqttPub.PublishBatch(changedEvents); err != nil {
+			return err
+		}
+		log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(events))
+	} else {
+		log.Printf("No changes detected (fetched %d records)", len(events))
+	}
 
 	// Persist to MongoDB
 	if err := p.mongoRepo.InsertBatch(ctx, events); err != nil {
@@ -147,4 +159,142 @@ func (p *Poller) RefreshStats(ctx context.Context) {
 	if today, err := p.mongoRepo.CountEventsToday(ctx); err == nil {
 		p.stats.EventsToday = today
 	}
+}
+
+// filterChangedEvents compares new events with existing MongoDB data
+// and returns only those that have changes in key business fields
+func (p *Poller) filterChangedEvents(ctx context.Context, newEvents []events.NormalizedEvent) ([]events.NormalizedEvent, error) {
+	if len(newEvents) == 0 {
+		return newEvents, nil
+	}
+
+	// Extract IDs from new events
+	ids := make([]string, len(newEvents))
+	for i, event := range newEvents {
+		ids[i] = event.ID
+	}
+
+	// Fetch existing events from MongoDB
+	existingEvents, err := p.mongoRepo.GetEventsByIDs(ctx, "akva", ids)
+	if err != nil {
+		return nil, err
+	}
+
+	// Compare and filter
+	var changedEvents []events.NormalizedEvent
+	for _, newEvent := range newEvents {
+		mongoID := fmt.Sprintf("akva:%s", newEvent.ID)
+		existingEvent, exists := existingEvents[mongoID]
+
+		// If event doesn't exist in MongoDB, it's new - include it
+		if !exists {
+			changedEvents = append(changedEvents, newEvent)
+			continue
+		}
+
+		// Compare key business fields for changes
+		if hasChanges(newEvent, existingEvent) {
+			changedEvents = append(changedEvents, newEvent)
+		}
+	}
+
+	return changedEvents, nil
+}
+
+// hasChanges compares a new event with existing MongoDB data
+// Returns true if there are meaningful changes in business fields
+func hasChanges(newEvent events.NormalizedEvent, existing mongo.HistoricalEvent) bool {
+	// Compare numeric business metrics
+	if getFloat(existing.Payload, "amountGrams") != newEvent.AmountGrams {
+		return true
+	}
+	if getFloat(existing.Payload, "biomasa") != newEvent.Biomasa {
+		return true
+	}
+	if getFloat(existing.Payload, "fishCount") != newEvent.FishCount {
+		return true
+	}
+	if getFloat(existing.Payload, "pesoProm") != newEvent.PesoProm {
+		return true
+	}
+	if getFloat(existing.Payload, "pelletFishMin") != newEvent.PelletFishMin {
+		return true
+	}
+	if getFloat(existing.Payload, "pelletPK") != newEvent.PelletPK {
+		return true
+	}
+	if getFloat(existing.Payload, "gramsPerSec") != newEvent.GramsPerSec {
+		return true
+	}
+	if getFloat(existing.Payload, "kgTonMin") != newEvent.KgTonMin {
+		return true
+	}
+
+	// Compare string fields
+	if getString(existing.Payload, "feedName") != newEvent.FeedName {
+		return true
+	}
+	if getString(existing.Payload, "siloName") != newEvent.SiloName {
+		return true
+	}
+	if getString(existing.Payload, "doserName") != newEvent.DoserName {
+		return true
+	}
+	if getString(existing.Payload, "name") != newEvent.Name {
+		return true
+	}
+
+	// Compare time fields
+	if getString(existing.Payload, "inicio") != newEvent.Inicio {
+		return true
+	}
+	if getString(existing.Payload, "fin") != newEvent.Fin {
+		return true
+	}
+
+	// Compare integer fields
+	if getInt(existing.Payload, "dif") != newEvent.Dif {
+		return true
+	}
+	if getInt(existing.Payload, "marca") != newEvent.Marca {
+		return true
+	}
+
+	return false
+}
+
+// Helper functions to safely extract values from payload map
+func getFloat(payload map[string]interface{}, key string) float64 {
+	if val, ok := payload[key]; ok {
+		if f, ok := val.(float64); ok {
+			return f
+		}
+	}
+	return 0
+}
+
+func getString(payload map[string]interface{}, key string) string {
+	if val, ok := payload[key]; ok {
+		if s, ok := val.(string); ok {
+			return s
+		}
+	}
+	return ""
+}
+
+func getInt(payload map[string]interface{}, key string) int {
+	if val, ok := payload[key]; ok {
+		// BSON might store as int32 or int64
+		switch v := val.(type) {
+		case int:
+			return v
+		case int32:
+			return int(v)
+		case int64:
+			return int(v)
+		case float64:
+			return int(v)
+		}
+	}
+	return 0
 }

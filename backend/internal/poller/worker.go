@@ -82,8 +82,10 @@ func (w *Worker) Initialize(ctx context.Context) error {
 	// Create poller
 	w.poller = NewPoller(cfg.Polling, w.akvaClient, w.mqttPub, w.mongoRepo, w.watermark)
 
-	// Refresh stats from MongoDB
-	w.poller.RefreshStats(ctx)
+	// Refresh stats from MongoDB (only if connected)
+	if w.mongoClient != nil && w.mongoClient.IsConnected() {
+		w.poller.RefreshStats(ctx)
+	}
 
 	return nil
 }

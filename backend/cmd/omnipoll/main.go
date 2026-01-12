@@ -35,12 +35,20 @@ func main() {
 	// Initialize worker
 	worker := poller.NewWorker(cfgManager)
 
-	// Initialize worker connections in background
+	// Initialize and auto-start worker in background
 	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		// Initialize with reasonable timeout (connections will retry later)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if err := worker.Initialize(ctx); err != nil {
-			log.Printf("Worker initialization warning: %v", err)
+		
+		// Initialize (ignore errors - connections will be retried during polling)
+		_ = worker.Initialize(ctx)
+		
+		// Start worker immediately after init attempt
+		if err := worker.Start(); err != nil {
+			log.Printf("Failed to start worker: %v", err)
+		} else {
+			log.Println("✓ Worker started automatically")
 		}
 	}()
 

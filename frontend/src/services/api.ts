@@ -2,6 +2,10 @@ import axios from 'axios'
 
 const client = axios.create({
   baseURL: '/api',
+  auth: {
+    username: 'admin',
+    password: 'admin123',
+  },
 })
 
 export const api = {
