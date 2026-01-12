@@ -22,7 +22,10 @@ func NewPublisher(client *Client) *Publisher {
 
 // Publish publishes a single event to MQTT
 func (p *Publisher) Publish(event events.NormalizedEvent) error {
-	if !p.client.IsConnected() {
+	cfg := p.client.GetConfig()
+	client := p.client.GetClient()
+	
+	if client == nil || !client.IsConnected() {
 		return fmt.Errorf("MQTT client not connected")
 	}
 
@@ -30,9 +33,6 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-
-	cfg := p.client.GetConfig()
-	client := p.client.GetClient()
 
 	token := client.Publish(cfg.Topic, cfg.QoS, false, payload)
 	if token.WaitTimeout(10 * time.Second) && token.Error() != nil {
