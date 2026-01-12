@@ -89,7 +89,9 @@ func (p *Poller) Poll(ctx context.Context) error {
 
 	// Publish only changed events to MQTT
 	if len(changedEvents) > 0 {
+		log.Printf("Attempting to publish %d changed events to MQTT", len(changedEvents))
 		if err := p.mqttPub.PublishBatch(changedEvents); err != nil {
+			log.Printf("ERROR: Failed to publish to MQTT: %v", err)
 			return err
 		}
 		log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(events))
