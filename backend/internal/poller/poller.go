@@ -140,24 +140,18 @@ func (p *Poller) updateStats(lastFechaHora time.Time, newEvents int64) {
 		p.stats.lastMinuteEvents = 0
 		p.stats.lastRateCalc = time.Now()
 	}
+	
+	// Update connection status (safe to do here during polling)
+	p.stats.SQLConnected = p.akvaClient != nil && p.akvaClient.IsConnected()
+	p.stats.MQTTConnected = p.mqttPub != nil && p.mqttPub.IsConnected()
+	p.stats.MongoConnected = p.mongoRepo != nil && p.mongoRepo.IsConnected()
 }
 
 // GetStats returns current statistics
 func (p *Poller) GetStats() Stats {
-	stats := *p.stats
-	
-	// Check connections without blocking
-	if p.akvaClient != nil {
-		stats.SQLConnected = p.akvaClient.IsConnected()
-	}
-	if p.mqttPub != nil {
-		stats.MQTTConnected = p.mqttPub.IsConnected()
-	}
-	if p.mongoRepo != nil {
-		stats.MongoConnected = p.mongoRepo.IsConnected()
-	}
-	
-	return stats
+	// Return cached stats - connection checks are done during polling
+	// to avoid mutex deadlocks when this is called from HTTP handlers
+	return *p.stats
 }
 
 // RefreshStats refreshes statistics from MongoDB
