@@ -74,10 +74,12 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		UptimeSeconds: int64(time.Since(startTime).Seconds()),
 	}
 
+	log.Println("[DEBUG] handleStatus: Encoding response")
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Printf("Error encoding status response: %v", err)
 	}
+	log.Println("[DEBUG] handleStatus: Response sent successfully")
 }
 
 // handleConfig handles GET and PUT for configuration

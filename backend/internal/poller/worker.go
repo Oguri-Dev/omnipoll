@@ -256,13 +256,13 @@ func (w *Worker) logEntry(level, message string) {
 
 	log.Printf("[%s] %s", level, message)
 
-	w.mu.Lock()
+	w.logsMu.Lock()
 	w.logs = append(w.logs, entry)
 	// Keep only last maxLogs entries
 	if len(w.logs) > w.maxLogs {
 		w.logs = w.logs[len(w.logs)-w.maxLogs:]
 	}
-	w.mu.Unlock()
+	w.logsMu.Unlock()
 }
 
 // Shutdown gracefully shuts down the worker
