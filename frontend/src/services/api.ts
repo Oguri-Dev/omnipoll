@@ -2,6 +2,7 @@ import axios from 'axios'
 
 const client = axios.create({
   baseURL: '/api',
+  timeout: 10000, // 10 second timeout
   auth: {
     username: 'admin',
     password: 'admin123',
