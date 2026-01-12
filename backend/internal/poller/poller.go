@@ -154,14 +154,9 @@ func (p *Poller) updateStats(lastFechaHora time.Time, newEvents int64) {
 
 // GetStats returns current statistics
 func (p *Poller) GetStats() Stats {
-	log.Println("[DEBUG] Poller.GetStats: Attempting RLock")
 	p.statsMu.RLock()
-	log.Println("[DEBUG] Poller.GetStats: RLock acquired")
 	defer p.statsMu.RUnlock()
-	log.Println("[DEBUG] Poller.GetStats: Copying stats")
-	stats := *p.stats
-	log.Println("[DEBUG] Poller.GetStats: Returning")
-	return stats
+	return *p.stats
 }
 
 // RefreshStats refreshes statistics from MongoDB
