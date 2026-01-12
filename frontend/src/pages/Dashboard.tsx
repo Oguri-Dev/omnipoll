@@ -7,10 +7,11 @@ import { api } from '../services/api'
 export default function Dashboard() {
   const queryClient = useQueryClient()
 
-  const { data: status, isLoading } = useQuery({
+  const { data: status, isLoading, isError, error } = useQuery({
     queryKey: ['status'],
     queryFn: api.getStatus,
     refetchInterval: 5000,
+    retry: 3,
   })
 
   const startWorker = useMutation({
@@ -29,7 +30,17 @@ export default function Dashboard() {
   })
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="p-4">Loading...</div>
+  }
+
+  if (isError) {
+    return (
+      <div className="p-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          Error loading status: {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      </div>
+    )
   }
 
   return (
