@@ -39,8 +39,10 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	var eventsToday, totalEvents int64
 	var ingestionRate float64
 	var sqlConnected, mqttConnected, mongoConnected bool
+	var workerRunning bool
 
 	if s.worker != nil {
+		workerRunning = s.worker.IsRunning()
 		stats := s.worker.GetStats()
 		if !stats.LastFechaHora.IsZero() {
 			lastFechaHora = stats.LastFechaHora.Format(time.RFC3339)
@@ -54,7 +56,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := StatusResponse{
-		WorkerRunning:  s.worker != nil && s.worker.IsRunning(),
+		WorkerRunning:  workerRunning,
 		LastFechaHora:  lastFechaHora,
 		EventsToday:    eventsToday,
 		IngestionRate:  ingestionRate,
@@ -68,7 +70,9 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("Error encoding status response: %v", err)
+	}
 }
 
 // handleConfig handles GET and PUT for configuration

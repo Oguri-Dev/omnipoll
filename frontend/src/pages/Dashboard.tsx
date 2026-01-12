@@ -16,8 +16,7 @@ export default function Dashboard() {
     queryKey: ['status'],
     queryFn: api.getStatus,
     refetchInterval: 5000,
-    retry: 2,
-    staleTime: 3000,
+    retry: false,
   })
 
   const startWorker = useMutation({
