@@ -158,12 +158,12 @@ func (p *Poller) GetStats() Stats {
 	defer p.statsMu.RUnlock()
 	return *p.stats
 }
-p.statsMu.Lock()
-	defer p.statsMu.Unlock()
-	
-	
+
 // RefreshStats refreshes statistics from MongoDB
 func (p *Poller) RefreshStats(ctx context.Context) {
+	p.statsMu.Lock()
+	defer p.statsMu.Unlock()
+	
 	if total, err := p.mongoRepo.CountEvents(ctx); err == nil {
 		p.stats.TotalEvents = total
 	}
