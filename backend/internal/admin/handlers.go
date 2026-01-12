@@ -31,6 +31,7 @@ var startTime = time.Now()
 
 // handleStatus returns system status
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
+	log.Println("[DEBUG] handleStatus: START")
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -43,8 +44,11 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	var workerRunning bool
 
 	if s.worker != nil {
+		log.Println("[DEBUG] handleStatus: Calling IsRunning")
 		workerRunning = s.worker.IsRunning()
+		log.Println("[DEBUG] handleStatus: Calling GetStats")
 		stats := s.worker.GetStats()
+		log.Println("[DEBUG] handleStatus: GetStats returned")
 		if !stats.LastFechaHora.IsZero() {
 			lastFechaHora = stats.LastFechaHora.Format(time.RFC3339)
 		}

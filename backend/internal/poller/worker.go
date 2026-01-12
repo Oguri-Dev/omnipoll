@@ -171,10 +171,15 @@ func (w *Worker) IsRunning() bool {
 
 // GetStats returns worker statistics
 func (w *Worker) GetStats() Stats {
+	log.Println("[DEBUG] Worker.GetStats: START")
 	if w.poller == nil {
+		log.Println("[DEBUG] Worker.GetStats: poller is nil, returning empty")
 		return Stats{}
 	}
-	return w.poller.GetStats()
+	log.Println("[DEBUG] Worker.GetStats: Calling poller.GetStats")
+	stats := w.poller.GetStats()
+	log.Println("[DEBUG] Worker.GetStats: poller.GetStats returned")
+	return stats
 }
 
 // ResetWatermark resets the watermark
