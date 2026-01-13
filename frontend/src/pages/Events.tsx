@@ -8,23 +8,25 @@ interface Event {
   source: string
   fechaHora: string
   unitName: string
-  name?: string
-  amountGrams?: number
-  pelletFishMin?: number
-  fishCount?: number
-  pesoProm?: number
-  biomasa?: number
-  pelletPK?: number
-  feedName?: string
-  siloName?: string
-  doserName?: string
-  gramsPerSec?: number
-  kgTonMin?: number
-  marca?: number
-  dia?: string
-  inicio?: string
-  fin?: string
-  dif?: number
+  payload?: {
+    name?: string
+    amountGrams?: number
+    pelletFishMin?: number
+    fishCount?: number
+    pesoProm?: number
+    biomasa?: number
+    pelletPK?: number
+    feedName?: string
+    siloName?: string
+    doserName?: string
+    gramsPerSec?: number
+    kgTonMin?: number
+    marca?: number
+    dia?: string
+    inicio?: string
+    fin?: string
+    dif?: number
+  }
   ingestedAt: string
 }
 
@@ -195,9 +197,9 @@ export default function Events() {
                       {new Date(event.fechaHora).toLocaleString()}
                     </td>
                     <td className="px-6 py-3 text-sm">
-                      {event.biomasa ? event.biomasa.toFixed(0) : '-'}
+                      {event.payload?.biomasa ? event.payload.biomasa.toFixed(0) : '-'}
                     </td>
-                    <td className="px-6 py-3 text-sm">{event.feedName || '-'}</td>
+                    <td className="px-6 py-3 text-sm">{event.payload?.feedName || '-'}</td>
                     <td className="px-6 py-3 text-sm">
                       <div className="flex gap-2">
                         <button
@@ -296,7 +298,10 @@ export default function Events() {
                 <h3 className="font-semibold mb-3">Event Data</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(selectedEvent)
-                    .filter(([key]) => !['_id', 'source', 'unitName', 'fechaHora', 'ingestedAt'].includes(key))
+                    .filter(
+                      ([key]) =>
+                        !['_id', 'source', 'unitName', 'fechaHora', 'ingestedAt'].includes(key)
+                    )
                     .map(([key, value]) => (
                       <div key={key} className="text-sm">
                         <p className="text-gray-600">{key}</p>
