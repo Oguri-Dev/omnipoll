@@ -109,8 +109,14 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 	}
 
 	token := client.Publish(topic, cfg.QoS, false, payload)
-	if token.WaitTimeout(2 * time.Second) && token.Error() != nil {
-		return fmt.Errorf("failed to publish message: %w", token.Error())
+	
+	// Wait with timeout and check result
+	if !token.WaitTimeout(2 * time.Second) {
+		return fmt.Errorf("publish timeout after 2s for topic %s", topic)
+	}
+	
+	if token.Error() != nil {
+		return fmt.Errorf("failed to publish to %s: %w", topic, token.Error())
 	}
 
 	return nil
