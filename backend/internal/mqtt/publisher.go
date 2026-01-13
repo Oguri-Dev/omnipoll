@@ -144,13 +144,49 @@ func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error {
 	// Log broker info once at the start
 	log.Printf("[MQTT] Starting batch publish to broker: %s:%d (TLS: %v, QoS: %d)", 
 		cfg.Broker, cfg.Port, cfg.UseTLS, cfg.QoS)
+	log.Printf("[MQTT] Total events to publish: %d", total)
+	
+	// Log first message payload for debugging
+	if total > 0 {
+		firstEvent := evts[0]
+		firstTopic := p.buildDynamicTopic(firstEvent.Name)
+		
+		// Build first message
+		firstMsg := MQTTMessage{
+			ID:                 firstEvent.ID,
+			Centro:             firstEvent.Name,
+			Jaula:              p.cleanJaula(firstEvent.UnitName),
+			TimeStampAkva:      firstEvent.FechaHora,
+			Dia:                firstEvent.Dia,
+			Inicio:             firstEvent.Inicio,
+			Fin:                firstEvent.Fin,
+			Dif:                firstEvent.Dif,
+			Gramos:             firstEvent.AmountGrams,
+			PelletFishMin:      firstEvent.PelletFishMin,
+			Peces:              firstEvent.FishCount,
+			PesoPromedio:       firstEvent.PesoProm,
+			Biomasa:            firstEvent.Biomasa,
+			PelletPK:           firstEvent.PelletPK,
+			Alimento:           firstEvent.FeedName,
+			Silo:               firstEvent.SiloName,
+			Dosificador:        firstEvent.DoserName,
+			GramsPorSegundo:    firstEvent.GramsPerSec,
+			KgTonMin:           firstEvent.KgTonMin,
+			Marca:              firstEvent.Marca,
+			TimeStampIngresado: firstEvent.IngestedAt.Format(time.RFC3339),
+		}
+		
+		firstPayload, _ := json.Marshal(firstMsg)
+		log.Printf("[MQTT] First message - Topic: %s", firstTopic)
+		log.Printf("[MQTT] First message - Payload: %s", string(firstPayload))
+	}
 	
 	for i, event := range evts {
 		// Build topic for logging
 		topic := p.buildDynamicTopic(event.Name)
 		
 		// Detailed logging for first 3 events only
-		if i < 3 {
+		if i < 3 && i > 0 {
 			log.Printf("[MQTT] Event %d/%d - Topic: %s", i+1, total, topic)
 			log.Printf("[MQTT] Event %d/%d - Data: Centro=%s, Jaula=%s, Gramos=%.2f, Peces=%.0f, Biomasa=%.0f, ID=%s", 
 				i+1, total, event.Name, p.cleanJaula(event.UnitName), event.AmountGrams, event.FishCount, event.Biomasa, event.ID)
