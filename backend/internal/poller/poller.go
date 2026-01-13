@@ -95,20 +95,20 @@ func (p *Poller) Poll(ctx context.Context) error {
 	log.Printf("Fetched %d new records from Akva", len(records))
 
 	// Convert to normalized events
-	events := akva.ToNormalizedEvents(records)
+	normalizedEvents := akva.ToNormalizedEvents(records)
 
 	// Filter only changed/new events for MQTT publishing
 	var changedEvents []events.NormalizedEvent
 	if p.mongoRepo != nil {
 		var err error
-		changedEvents, err = p.filterChangedEvents(ctx, events)
+		changedEvents, err = p.filterChangedEvents(ctx, normalizedEvents)
 		if err != nil {
 			log.Printf("Warning: failed to filter changed events: %v", err)
-			changedEvents = events // Fallback: publish all if filtering fails
+			changedEvents = normalizedEvents // Fallback: publish all if filtering fails
 		}
 	} else {
 		log.Printf("Warning: MongoDB not available, publishing all events without filtering")
-		changedEvents = events
+		changedEvents = normalizedEvents
 	}
 
 	// Publish only changed events to MQTT
@@ -118,18 +118,18 @@ func (p *Poller) Poll(ctx context.Context) error {
 			log.Printf("ERROR: Failed to publish to MQTT: %v", err)
 			return err
 		}
-		log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(events))
+		log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(normalizedEvents))
 	} else {
-		log.Printf("No changes detected (fetched %d records)", len(events))
+		log.Printf("No changes detected (fetched %d records)", len(normalizedEvents))
 	}
 
 	// Persist to MongoDB (skip if not connected)
 	if p.mongoRepo != nil {
-		if err := p.mongoRepo.InsertBatch(ctx, events); err != nil {
+		if err := p.mongoRepo.InsertBatch(ctx, normalizedEvents); err != nil {
 			log.Printf("Warning: MongoDB insert error (may be duplicates): %v", err)
 			// Continue anyway - duplicates are expected for idempotency
 		}
-		log.Printf("Persisted %d events to MongoDB", len(events))
+		log.Printf("Persisted %d events to MongoDB", len(normalizedEvents))
 	} else {
 		log.Printf("Warning: MongoDB not available, skipping persistence")
 	}
