@@ -49,14 +49,40 @@ export const api = {
   },
 
   // Logs
-  getLogs: async () => {
-    const { data } = await client.get('/logs')
+  getLogs: async (level?: string, page?: number, pageSize?: number) => {
+    const { data } = await client.get('/logs', {
+      params: { level, page, pageSize },
+    })
     return data
   },
 
   // Events
-  getEvents: async () => {
-    const { data } = await client.get('/events')
+  getEvents: async (page?: number, pageSize?: number, filters?: any) => {
+    const { data } = await client.get('/events', {
+      params: { page, pageSize, ...filters },
+    })
+    return data
+  },
+
+  getEventById: async (id: string) => {
+    const { data } = await client.get(`/events/${id}`)
+    return data
+  },
+
+  updateEvent: async (id: string, payload: any) => {
+    const { data } = await client.put(`/events/${id}`, payload)
+    return data
+  },
+
+  deleteEvent: async (id: string) => {
+    const { data } = await client.delete(`/events/${id}`)
+    return data
+  },
+
+  deleteEventsBatch: async (source?: string, beforeDate?: string) => {
+    const { data } = await client.delete('/events/batch', {
+      data: { source, beforeDate },
+    })
     return data
   },
 }

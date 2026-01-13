@@ -1,44 +1,94 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../services/api'
+import { Settings, CheckCircle, AlertCircle } from 'lucide-react'
+
+interface ConfigData {
+  sqlServer?: Record<string, any>
+  mqtt?: Record<string, any>
+  mongodb?: Record<string, any>
+  polling?: Record<string, any>
+  admin?: Record<string, any>
+}
 
 export default function Configuration() {
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState<'sqlserver' | 'mqtt' | 'mongodb' | 'polling'>(
-    'sqlserver'
-  )
+  const [activeTab, setActiveTab] = useState<'sqlserver' | 'mqtt' | 'mongodb' | 'polling'>('sqlserver')
+  const [testResult, setTestResult] = useState<{ type?: string; success?: boolean; message?: string } | null>(null)
+  const [successMessage, setSuccessMessage] = useState('')
 
-  const { data: config, isLoading } = useQuery({
+  const { data: response, isLoading } = useQuery({
     queryKey: ['config'],
     queryFn: api.getConfig,
   })
 
+  const config = response?.data || {}
+
   const saveConfig = useMutation({
     mutationFn: api.saveConfig,
     onSuccess: () => {
+      setSuccessMessage('Configuration saved successfully!')
+      setTimeout(() => setSuccessMessage(''), 3000)
       queryClient.invalidateQueries({ queryKey: ['config'] })
-      alert('Configuration saved!')
+    },
+    onError: (error: any) => {
+      alert('Error saving configuration: ' + (error.response?.data?.error || error.message))
     },
   })
 
   const testConnection = useMutation({
-    mutationFn: api.testConnection,
+    mutationFn: (type: 'sqlserver' | 'mqtt' | 'mongodb') => api.testConnection(type),
+    onSuccess: (data, type) => {
+      setTestResult({
+        type,
+        success: data.connected,
+        message: data.error || 'Connection successful',
+      })
+      setTimeout(() => setTestResult(null), 3000)
+    },
+    onError: (error: any, type) => {
+      setTestResult({
+        type,
+        success: false,
+        message: error.response?.data?.error || error.message,
+      })
+      setTimeout(() => setTestResult(null), 3000)
+    },
   })
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="p-4">Loading configuration...</div>
   }
 
   const tabs = [
-    { id: 'sqlserver', label: 'SQL Server' },
-    { id: 'mqtt', label: 'MQTT' },
-    { id: 'mongodb', label: 'MongoDB' },
-    { id: 'polling', label: 'Polling' },
-  ] as const
+    { id: 'sqlserver' as const, label: 'SQL Server' },
+    { id: 'mqtt' as const, label: 'MQTT' },
+    { id: 'mongodb' as const, label: 'MongoDB' },
+    { id: 'polling' as const, label: 'Polling' },
+  ]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Configuration</h1>
+      <div className="flex items-center gap-2">
+        <Settings className="w-6 h-6" />
+        <h1 className="text-2xl font-bold">Configuration</h1>
+      </div>
+
+      {/* Success message */}
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center gap-2">
+          <CheckCircle className="w-5 h-5" />
+          {successMessage}
+        </div>
+      )}
+
+      {/* Test result */}
+      {testResult && (
+        <div className={`border px-4 py-3 rounded flex items-center gap-2 ${testResult.success ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'}`}>
+          {testResult.success ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          <span>{testResult.type} - {testResult.message}</span>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="border-b">
@@ -62,192 +112,175 @@ export default function Configuration() {
       {/* Tab Content */}
       <div className="bg-white rounded-lg shadow p-6">
         {activeTab === 'sqlserver' && (
-          <SQLServerConfig
-            config={config?.sqlServer}
-            onSave={saveConfig.mutate}
+          <ConfigForm
+            title="SQL Server Configuration"
+            config={config.sqlServer || {}}
+            fields={[
+              { key: 'host', label: 'Host', type: 'text' },
+              { key: 'port', label: 'Port', type: 'number' },
+              { key: 'database', label: 'Database', type: 'text' },
+              { key: 'user', label: 'User', type: 'text' },
+              { key: 'password', label: 'Password', type: 'password' },
+            ]}
+            onSave={(data) => {
+              saveConfig.mutate({ ...config, sqlServer: data })
+            }}
             onTest={() => testConnection.mutate('sqlserver')}
+            isTesting={testConnection.isPending}
+            isSaving={saveConfig.isPending}
           />
         )}
+
         {activeTab === 'mqtt' && (
-          <MQTTConfig
-            config={config?.mqtt}
-            onSave={saveConfig.mutate}
+          <ConfigForm
+            title="MQTT Configuration"
+            config={config.mqtt || {}}
+            fields={[
+              { key: 'broker', label: 'Broker', type: 'text' },
+              { key: 'port', label: 'Port', type: 'number' },
+              { key: 'topic', label: 'Topic', type: 'text' },
+              { key: 'clientId', label: 'Client ID', type: 'text' },
+              { key: 'user', label: 'User', type: 'text' },
+              { key: 'password', label: 'Password', type: 'password' },
+              { key: 'qos', label: 'QoS', type: 'select', options: [0, 1, 2] },
+            ]}
+            onSave={(data) => {
+              saveConfig.mutate({ ...config, mqtt: data })
+            }}
             onTest={() => testConnection.mutate('mqtt')}
+            isTesting={testConnection.isPending}
+            isSaving={saveConfig.isPending}
           />
         )}
+
         {activeTab === 'mongodb' && (
-          <MongoDBConfig
-            config={config?.mongodb}
-            onSave={saveConfig.mutate}
+          <ConfigForm
+            title="MongoDB Configuration"
+            config={config.mongodb || {}}
+            fields={[
+              { key: 'uri', label: 'URI', type: 'text' },
+              { key: 'database', label: 'Database', type: 'text' },
+              { key: 'collection', label: 'Collection', type: 'text' },
+            ]}
+            onSave={(data) => {
+              saveConfig.mutate({ ...config, mongodb: data })
+            }}
             onTest={() => testConnection.mutate('mongodb')}
+            isTesting={testConnection.isPending}
+            isSaving={saveConfig.isPending}
           />
         )}
+
         {activeTab === 'polling' && (
-          <PollingConfig config={config?.polling} onSave={saveConfig.mutate} />
+          <ConfigForm
+            title="Polling Configuration"
+            config={config.polling || {}}
+            fields={[
+              { key: 'intervalMs', label: 'Interval (ms)', type: 'number' },
+              { key: 'batchSize', label: 'Batch Size', type: 'number' },
+            ]}
+            onSave={(data) => {
+              saveConfig.mutate({ ...config, polling: data })
+            }}
+            isSaving={saveConfig.isPending}
+            showTest={false}
+          />
         )}
       </div>
     </div>
   )
 }
 
-// Config form components (simplified)
-function SQLServerConfig({ config, onTest }: any) {
-  return (
-    <form className="space-y-4">
-      <h3 className="text-lg font-medium">SQL Server Configuration</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          type="text"
-          placeholder="Host"
-          defaultValue={config?.host}
-          className="border rounded p-2"
-        />
-        <input
-          type="number"
-          placeholder="Port"
-          defaultValue={config?.port}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="Database"
-          defaultValue={config?.database}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="User"
-          defaultValue={config?.user}
-          className="border rounded p-2"
-        />
-        <input type="password" placeholder="Password" className="border rounded p-2 col-span-2" />
-      </div>
-      <div className="flex gap-4">
-        <button type="button" onClick={onTest} className="px-4 py-2 bg-gray-500 text-white rounded">
-          Test Connection
-        </button>
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-          Save
-        </button>
-      </div>
-    </form>
-  )
-}
+function ConfigForm({
+  title,
+  config,
+  fields,
+  onSave,
+  onTest,
+  isTesting,
+  isSaving,
+  showTest = true,
+}: {
+  title: string
+  config: Record<string, any>
+  fields: Array<{
+    key: string
+    label: string
+    type: string
+    options?: any[]
+  }>
+  onSave: (data: Record<string, any>) => void
+  onTest?: () => void
+  isTesting?: boolean
+  isSaving?: boolean
+  showTest?: boolean
+}) {
+  const [formData, setFormData] = useState(config)
 
-function MQTTConfig({ config, onTest }: any) {
-  return (
-    <form className="space-y-4">
-      <h3 className="text-lg font-medium">MQTT Configuration</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          type="text"
-          placeholder="Broker"
-          defaultValue={config?.broker}
-          className="border rounded p-2"
-        />
-        <input
-          type="number"
-          placeholder="Port"
-          defaultValue={config?.port}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="Topic"
-          defaultValue={config?.topic}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="Client ID"
-          defaultValue={config?.clientId}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="User"
-          defaultValue={config?.user}
-          className="border rounded p-2"
-        />
-        <input type="password" placeholder="Password" className="border rounded p-2" />
-        <select defaultValue={config?.qos} className="border rounded p-2">
-          <option value={0}>QoS 0</option>
-          <option value={1}>QoS 1</option>
-        </select>
-      </div>
-      <div className="flex gap-4">
-        <button type="button" onClick={onTest} className="px-4 py-2 bg-gray-500 text-white rounded">
-          Test Connection
-        </button>
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-          Save
-        </button>
-      </div>
-    </form>
-  )
-}
+  const handleChange = (key: string, value: any) => {
+    setFormData(prev => ({ ...prev, [key]: value }))
+  }
 
-function MongoDBConfig({ config, onTest }: any) {
-  return (
-    <form className="space-y-4">
-      <h3 className="text-lg font-medium">MongoDB Configuration</h3>
-      <div className="grid grid-cols-1 gap-4">
-        <input
-          type="text"
-          placeholder="URI"
-          defaultValue={config?.uri}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="Database"
-          defaultValue={config?.database}
-          className="border rounded p-2"
-        />
-        <input
-          type="text"
-          placeholder="Collection"
-          defaultValue={config?.collection}
-          className="border rounded p-2"
-        />
-      </div>
-      <div className="flex gap-4">
-        <button type="button" onClick={onTest} className="px-4 py-2 bg-gray-500 text-white rounded">
-          Test Connection
-        </button>
-        <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-          Save
-        </button>
-      </div>
-    </form>
-  )
-}
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSave(formData)
+  }
 
-function PollingConfig({ config }: any) {
   return (
-    <form className="space-y-4">
-      <h3 className="text-lg font-medium">Polling Configuration</h3>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Interval (ms)</label>
-          <input
-            type="number"
-            defaultValue={config?.intervalMs}
-            className="border rounded p-2 w-full"
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-gray-600 mb-1">Batch Size</label>
-          <input
-            type="number"
-            defaultValue={config?.batchSize}
-            className="border rounded p-2 w-full"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <h3 className="text-lg font-medium">{title}</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {fields.map((field) => (
+          <div key={field.key}>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {field.label}
+            </label>
+            {field.type === 'select' ? (
+              <select
+                value={formData[field.key] || ''}
+                onChange={(e) => handleChange(field.key, Number(e.target.value))}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select...</option>
+                {field.options?.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type}
+                value={formData[field.key] || ''}
+                onChange={(e) => handleChange(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)}
+                placeholder={field.label}
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+          </div>
+        ))}
       </div>
-      <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded">
-        Save
-      </button>
+
+      <div className="flex gap-4 pt-4">
+        {showTest && onTest && (
+          <button
+            type="button"
+            onClick={onTest}
+            disabled={isTesting}
+            className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded disabled:opacity-50"
+          >
+            {isTesting ? 'Testing...' : 'Test Connection'}
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={isSaving}
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded disabled:opacity-50"
+        >
+          {isSaving ? 'Saving...' : 'Save Configuration'}
+        </button>
+      </div>
     </form>
   )
 }
