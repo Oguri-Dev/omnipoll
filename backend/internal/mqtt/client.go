@@ -36,6 +36,8 @@ func (c *Client) Connect() error {
 	}
 	broker := fmt.Sprintf("%s://%s:%d", protocol, c.config.Broker, c.config.Port)
 
+	fmt.Printf("[MQTT Client] Connecting to broker: %s (User: %s, TLS: %v)\n", broker, c.config.User, c.config.UseTLS)
+
 	opts := paho.NewClientOptions().
 		AddBroker(broker).
 		SetClientID(c.config.ClientID).
@@ -49,11 +51,13 @@ func (c *Client) Connect() error {
 			c.mu.Lock()
 			c.connected = false
 			c.mu.Unlock()
+			fmt.Printf("[MQTT Client] Connection lost: %v\n", err)
 		}).
 		SetOnConnectHandler(func(client paho.Client) {
 			c.mu.Lock()
 			c.connected = true
 			c.mu.Unlock()
+			fmt.Printf("[MQTT Client] Connected successfully to %s\n", broker)
 		})
 
 	if c.config.User != "" {
@@ -67,11 +71,12 @@ func (c *Client) Connect() error {
 
 	token := client.Connect()
 	if token.WaitTimeout(5 * time.Second) && token.Error() != nil {
-		return fmt.Errorf("failed to connect to MQTT broker: %w", token.Error())
+		return fmt.Errorf("failed to connect to MQTT broker %s: %w", broker, token.Error())
 	}
 
 	c.client = client
 	c.connected = true
+	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
 	return nil
 }
 
