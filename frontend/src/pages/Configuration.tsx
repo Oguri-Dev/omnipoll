@@ -3,14 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../services/api'
 import { Settings, CheckCircle, AlertCircle } from 'lucide-react'
 
-interface ConfigData {
-  sqlServer?: Record<string, any>
-  mqtt?: Record<string, any>
-  mongodb?: Record<string, any>
-  polling?: Record<string, any>
-  admin?: Record<string, any>
-}
-
 export default function Configuration() {
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'sqlserver' | 'mqtt' | 'mongodb' | 'polling'>(

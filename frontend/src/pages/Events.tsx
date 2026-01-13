@@ -30,15 +30,6 @@ interface Event {
   ingestedAt: string
 }
 
-interface EventsResponse {
-  success: boolean
-  data: Event[]
-  page: number
-  pages: number
-  total: number
-  limit: number
-}
-
 export default function Events() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)

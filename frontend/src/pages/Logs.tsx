@@ -9,15 +9,6 @@ interface LogEntry {
   message: string
 }
 
-interface LogsResponse {
-  success: boolean
-  data: LogEntry[]
-  page: number
-  pages: number
-  total: number
-  limit: number
-}
-
 export default function Logs() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(100)
