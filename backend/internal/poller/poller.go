@@ -98,10 +98,17 @@ func (p *Poller) Poll(ctx context.Context) error {
 	events := akva.ToNormalizedEvents(records)
 
 	// Filter only changed/new events for MQTT publishing
-	changedEvents, err := p.filterChangedEvents(ctx, events)
-	if err != nil {
-		log.Printf("Warning: failed to filter changed events: %v", err)
-		changedEvents = events // Fallback: publish all if filtering fails
+	var changedEvents []events.NormalizedEvent
+	if p.mongoRepo != nil {
+		var err error
+		changedEvents, err = p.filterChangedEvents(ctx, events)
+		if err != nil {
+			log.Printf("Warning: failed to filter changed events: %v", err)
+			changedEvents = events // Fallback: publish all if filtering fails
+		}
+	} else {
+		log.Printf("Warning: MongoDB not available, publishing all events without filtering")
+		changedEvents = events
 	}
 
 	// Publish only changed events to MQTT
@@ -116,13 +123,16 @@ func (p *Poller) Poll(ctx context.Context) error {
 		log.Printf("No changes detected (fetched %d records)", len(events))
 	}
 
-	// Persist to MongoDB
-	if err := p.mongoRepo.InsertBatch(ctx, events); err != nil {
-		log.Printf("Warning: MongoDB insert error (may be duplicates): %v", err)
-		// Continue anyway - duplicates are expected for idempotency
+	// Persist to MongoDB (skip if not connected)
+	if p.mongoRepo != nil {
+		if err := p.mongoRepo.InsertBatch(ctx, events); err != nil {
+			log.Printf("Warning: MongoDB insert error (may be duplicates): %v", err)
+			// Continue anyway - duplicates are expected for idempotency
+		}
+		log.Printf("Persisted %d events to MongoDB", len(events))
+	} else {
+		log.Printf("Warning: MongoDB not available, skipping persistence")
 	}
-
-	log.Printf("Persisted %d events to MongoDB", len(events))
 
 	// Update watermark
 	// Find the latest timestamp and collect IDs at that timestamp

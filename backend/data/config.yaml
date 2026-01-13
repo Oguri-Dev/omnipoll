@@ -1,27 +1,27 @@
 sqlServer:
-    host: localhost
-    port: 1433
-    database: FTFeeding
-    user: sa
-    password: ""
+  host: localhost
+  port: 1433
+  database: FTFeeding
+  user: sa
+  password: ''
 mqtt:
-    broker: mqtt.vmsfish.com
-    port: 8883
-    topic: feeding/mowi/
-    clientId: omnipoll-api-test
-    user: test
-    password: test2025
-    qos: 1
-    useTLS: true
+  broker: mqtt.vmsfish.com
+  port: 8883
+  topic: feeding/mowi/
+  clientId: omnipoll-api-test
+  user: test
+  password: test2025
+  qos: 1
+  useTLS: true
 mongodb:
-    uri: mongodb://localhost:27017
-    database: omnipoll
-    collection: historical_events
+  uri: mongodb://mongodb:27017
+  database: omnipoll
+  collection: historical_events
 polling:
-    intervalMs: 5000
-    batchSize: 100
+  intervalMs: 5000
+  batchSize: 100
 admin:
-    host: 127.0.0.1
-    port: 8080
-    username: admin
-    password: admin
+  host: 127.0.0.1
+  port: 8080
+  username: admin
+  password: admin
