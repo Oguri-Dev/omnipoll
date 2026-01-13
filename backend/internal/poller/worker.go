@@ -194,6 +194,10 @@ func (w *Worker) run() {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
+	// SQL Server reconnection ticker (every 30 seconds)
+	sqlRetryTicker := time.NewTicker(30 * time.Second)
+	defer sqlRetryTicker.Stop()
+
 	// Run immediately on start
 	w.doPoll()
 
@@ -203,6 +207,8 @@ func (w *Worker) run() {
 			return
 		case <-ticker.C:
 			w.doPoll()
+		case <-sqlRetryTicker.C:
+			w.checkAndReconnectSQL()
 		}
 	}
 }
@@ -214,6 +220,35 @@ func (w *Worker) doPoll() {
 
 	if err := w.poller.Poll(ctx); err != nil {
 		w.logEntry("error", "Poll error: "+err.Error())
+	}
+}
+
+// checkAndReconnectSQL checks SQL connection and attempts to reconnect if needed
+func (w *Worker) checkAndReconnectSQL() {
+	// Check if SQL client exists and is connected
+	if w.akvaClient == nil || !w.akvaClient.IsConnected() {
+		w.logEntry("warn", "SQL Server disconnected, attempting to reconnect...")
+		
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		
+		cfg := w.configManager.Get()
+		
+		// Create new client if needed
+		if w.akvaClient == nil {
+			w.akvaClient = akva.NewClient(cfg.SQLServer)
+		}
+		
+		// Attempt to connect
+		if err := w.akvaClient.Connect(ctx); err != nil {
+			w.logEntry("warn", "SQL Server reconnection failed: "+err.Error())
+		} else {
+			w.logEntry("info", "✓ SQL Server reconnected successfully")
+			// Update poller with reconnected client
+			if w.poller != nil {
+				w.poller.akvaClient = w.akvaClient
+			}
+		}
 	}
 }
 
