@@ -82,8 +82,12 @@ func (c *Client) Connect() error {
 	c.connected = true
 	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
 	
+	// Recreate stopHeartbeat channel for this connection
+	c.stopHeartbeat = make(chan struct{})
+	
 	// Start heartbeat goroutine
 	go c.startHeartbeat()
+	fmt.Printf("[MQTT Client] Heartbeat started\n")
 	
 	return nil
 }
@@ -93,8 +97,13 @@ func (c *Client) Disconnect() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Stop heartbeat goroutine
-	close(c.stopHeartbeat)
+	// Stop heartbeat goroutine if channel is open
+	select {
+	case <-c.stopHeartbeat:
+		// Already closed
+	default:
+		close(c.stopHeartbeat)
+	}
 
 	if c.client != nil && c.client.IsConnected() {
 		c.client.Disconnect(1000)
