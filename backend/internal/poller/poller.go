@@ -62,12 +62,29 @@ func NewPoller(
 
 // Poll executes one polling cycle
 func (p *Poller) Poll(ctx context.Context) error {
+	// Update connection status before attempting operations
+	p.UpdateConnectionStats()
+
+	// Check if we have the required clients
+	if p.akvaClient == nil {
+		return fmt.Errorf("not connected to SQL Server (Akva)")
+	}
+	if p.mqttPub == nil {
+		return fmt.Errorf("not connected to MQTT")
+	}
+	if p.mongoRepo == nil {
+		return fmt.Errorf("not connected to MongoDB")
+	}
+
 	// Get current watermark
 	wm := p.watermark.Get()
 
 	// Fetch new records from Akva
 	records, err := p.akvaClient.FetchNewRecords(ctx, wm.LastFechaHora, wm.IDsAtLastFechaHora, p.config.BatchSize)
 	if err != nil {
+		p.statsMu.Lock()
+		p.stats.SQLConnected = false
+		p.statsMu.Unlock()
 		return err
 	}
 
@@ -165,12 +182,47 @@ func (p *Poller) GetStats() Stats {
 func (p *Poller) RefreshStats(ctx context.Context) {
 	p.statsMu.Lock()
 	defer p.statsMu.Unlock()
-	
-	if total, err := p.mongoRepo.CountEvents(ctx); err == nil {
-		p.stats.TotalEvents = total
+
+	if p.mongoRepo == nil {
+		p.stats.MongoConnected = false
+	} else {
+		p.stats.MongoConnected = p.mongoRepo.IsConnected()
 	}
-	if today, err := p.mongoRepo.CountEventsToday(ctx); err == nil {
-		p.stats.EventsToday = today
+
+	if p.mqttPub == nil {
+		p.stats.MQTTConnected = false
+	} else {
+		p.stats.MQTTConnected = p.mqttPub.IsConnected()
+	}
+
+	if p.akvaClient == nil {
+		p.stats.SQLConnected = false
+	} else {
+		p.stats.SQLConnected = p.akvaClient.IsConnected()
+	}
+}
+
+// UpdateConnectionStats updates connection status based on real client states
+func (p *Poller) UpdateConnectionStats() {
+	p.statsMu.Lock()
+	defer p.statsMu.Unlock()
+
+	if p.mqttPub != nil {
+		p.stats.MQTTConnected = p.mqttPub.IsConnected()
+	} else {
+		p.stats.MQTTConnected = false
+	}
+
+	if p.akvaClient != nil {
+		p.stats.SQLConnected = p.akvaClient.IsConnected()
+	} else {
+		p.stats.SQLConnected = false
+	}
+
+	if p.mongoRepo != nil {
+		p.stats.MongoConnected = p.mongoRepo.IsConnected()
+	} else {
+		p.stats.MongoConnected = false
 	}
 }
 
