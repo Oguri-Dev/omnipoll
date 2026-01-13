@@ -1,7 +1,9 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -77,6 +79,10 @@ func (c *Client) Connect() error {
 	c.client = client
 	c.connected = true
 	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
+	
+	// Send heartbeat message to verify connectivity
+	c.sendHeartbeat()
+	
 	return nil
 }
 
@@ -112,6 +118,44 @@ func (c *Client) GetClient() paho.Client {
 // GetConfig returns the MQTT configuration
 func (c *Client) GetConfig() config.MQTTConfig {
 	return c.config
+}
+
+// sendHeartbeat sends a simple heartbeat message to verify connectivity
+func (c *Client) sendHeartbeat() {
+	if c.client == nil || !c.client.IsConnected() {
+		log.Printf("[MQTT Heartbeat] Client not connected, skipping heartbeat")
+		return
+	}
+
+	heartbeat := map[string]interface{}{
+		"status":    "connected",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"clientId":  c.config.ClientID,
+		"version":   "1.0",
+	}
+
+	payload, err := json.Marshal(heartbeat)
+	if err != nil {
+		log.Printf("[MQTT Heartbeat] Failed to marshal: %v", err)
+		return
+	}
+
+	topic := "feeding/mowi/status"
+	log.Printf("[MQTT Heartbeat] Sending to topic: %s", topic)
+	log.Printf("[MQTT Heartbeat] Payload: %s", string(payload))
+
+	token := c.client.Publish(topic, byte(c.config.QoS), false, payload)
+	
+	// Wait for publish to complete
+	if token.WaitTimeout(3 * time.Second) {
+		if token.Error() != nil {
+			log.Printf("[MQTT Heartbeat] ERROR: %v", token.Error())
+		} else {
+			log.Printf("[MQTT Heartbeat] ✓ Successfully sent")
+		}
+	} else {
+		log.Printf("[MQTT Heartbeat] TIMEOUT after 3 seconds")
+	}
 }
 
 // TestConnection tests the MQTT connection
