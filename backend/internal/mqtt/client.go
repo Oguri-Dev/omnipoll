@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -127,9 +126,6 @@ func (c *Client) TestConnection() error {
 	if !c.client.IsConnected() {
 		return fmt.Errorf("not connected to MQTT broker")
 	}
-
-	return nil
-}
 
 	return nil
 }
