@@ -1,9 +1,7 @@
 package mqtt
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -117,13 +115,13 @@ func (c *Client) GetConfig() config.MQTTConfig {
 	return c.config
 }
 
-// sendHeartbeat sends a simple heartbeat message to verify connectivity
-func (c *Client) sendHeartbeat() {
-	if c.client == nil || !c.client.IsConnected() {
-		log.Printf("[MQTT Heartbeat] Client not connected, skipping heartbeat")
-		return
+// TestConnection tests the MQTT connection
+func (c *Client) TestConnection() error {
+	if c.client == nil {
+		if err := c.Connect(); err != nil {
+			return err
+		}
 	}
-
 
 	if !c.client.IsConnected() {
 		return fmt.Errorf("not connected to MQTT broker")
