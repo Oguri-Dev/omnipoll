@@ -28,6 +28,23 @@ func NewClient(cfg config.MQTTConfig) *Client {
 	}
 }
 
+// restartHeartbeat stops any existing heartbeat and starts a new one
+func (c *Client) restartHeartbeat() {
+	// Stop previous heartbeat if running
+	if c.stopHeartbeat != nil {
+		select {
+		case <-c.stopHeartbeat:
+			// already closed
+		default:
+			close(c.stopHeartbeat)
+		}
+	}
+	// Create new channel and start goroutine
+	c.stopHeartbeat = make(chan struct{})
+	go c.startHeartbeat()
+	log.Printf("[MQTT Client] Heartbeat started")
+}
+
 // Connect establishes connection to MQTT broker
 func (c *Client) Connect() error {
 	c.mu.Lock()
@@ -62,6 +79,8 @@ func (c *Client) Connect() error {
 			c.connected = true
 			c.mu.Unlock()
 			fmt.Printf("[MQTT Client] Connected successfully to %s\n", broker)
+			// Restart heartbeat on every successful (re)connection
+			c.restartHeartbeat()
 		})
 
 	if c.config.User != "" {
@@ -81,14 +100,10 @@ func (c *Client) Connect() error {
 	c.client = client
 	c.connected = true
 	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
-	
-	// Recreate stopHeartbeat channel for this connection
-	c.stopHeartbeat = make(chan struct{})
-	
-	// Start heartbeat goroutine
-	go c.startHeartbeat()
-	fmt.Printf("[MQTT Client] Heartbeat started\n")
-	
+
+	// Start heartbeat for the initial connection
+	c.restartHeartbeat()
+
 	return nil
 }
 
@@ -98,11 +113,13 @@ func (c *Client) Disconnect() {
 	defer c.mu.Unlock()
 
 	// Stop heartbeat goroutine if channel is open
-	select {
-	case <-c.stopHeartbeat:
-		// Already closed
-	default:
-		close(c.stopHeartbeat)
+	if c.stopHeartbeat != nil {
+		select {
+		case <-c.stopHeartbeat:
+			// Already closed
+		default:
+			close(c.stopHeartbeat)
+		}
 	}
 
 	if c.client != nil && c.client.IsConnected() {
