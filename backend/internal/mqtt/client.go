@@ -60,8 +60,12 @@ func (c *Client) Connect() error {
 			c.connected = true
 			c.mu.Unlock()
 			fmt.Printf("[MQTT Client] Connected successfully to %s\n", broker)
+			fmt.Printf("[MQTT Client] Triggering heartbeat...\n")
 			// Send heartbeat when connection is fully established
-			go c.sendHeartbeat()
+			go func() {
+				time.Sleep(100 * time.Millisecond) // Small delay to ensure connection is ready
+				c.sendHeartbeat()
+			}()
 		})
 
 	if c.config.User != "" {
