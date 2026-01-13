@@ -12,6 +12,7 @@ mqtt:
     user: test
     password: test2025
     qos: 1
+    useTLS: true
 mongodb:
     uri: mongodb://localhost:27017
     database: omnipoll

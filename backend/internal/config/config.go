@@ -25,6 +25,7 @@ type MQTTConfig struct {
 	User     string `json:"user" yaml:"user"`
 	Password string `json:"password" yaml:"password"` // Encrypted at rest
 	QoS      byte   `json:"qos" yaml:"qos"`
+	UseTLS   bool   `json:"useTLS" yaml:"useTLS"`
 }
 
 type MongoDBConfig struct {

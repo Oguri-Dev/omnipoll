@@ -29,7 +29,12 @@ func (c *Client) Connect() error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	broker := fmt.Sprintf("tcp://%s:%d", c.config.Broker, c.config.Port)
+	// Determine protocol: use TLS for port 8883 or if UseTLS is explicitly set
+	protocol := "tcp"
+	if c.config.UseTLS || c.config.Port == 8883 {
+		protocol = "ssl"
+	}
+	broker := fmt.Sprintf("%s://%s:%d", protocol, c.config.Broker, c.config.Port)
 
 	opts := paho.NewClientOptions().
 		AddBroker(broker).
