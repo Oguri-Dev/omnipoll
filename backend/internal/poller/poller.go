@@ -62,6 +62,8 @@ func NewPoller(
 
 // Poll executes one polling cycle
 func (p *Poller) Poll(ctx context.Context) error {
+	log.Printf("[Poller] Starting poll cycle at %s", time.Now().Format(time.RFC3339))
+	
 	// Update connection status before attempting operations
 	p.UpdateConnectionStats()
 
@@ -78,10 +80,13 @@ func (p *Poller) Poll(ctx context.Context) error {
 
 	// Get current watermark
 	wm := p.watermark.Get()
+	log.Printf("[Poller] Current watermark - LastFechaHora: %s, IDs count: %d", wm.LastFechaHora.Format(time.RFC3339), len(wm.IDsAtLastFechaHora))
 
 	// Fetch new records from Akva
+	log.Printf("[Poller] Fetching records from SQL Server (batch size: %d)", p.config.BatchSize)
 	records, err := p.akvaClient.FetchNewRecords(ctx, wm.LastFechaHora, wm.IDsAtLastFechaHora, p.config.BatchSize)
 	if err != nil {
+		log.Printf("[Poller] ERROR fetching from SQL Server: %v", err)
 		p.statsMu.Lock()
 		p.stats.SQLConnected = false
 		p.statsMu.Unlock()
@@ -89,10 +94,11 @@ func (p *Poller) Poll(ctx context.Context) error {
 	}
 
 	if len(records) == 0 {
+		log.Printf("[Poller] No new records found")
 		return nil // No new records
 	}
 
-	log.Printf("Fetched %d new records from Akva", len(records))
+	log.Printf("[Poller] ✓ Fetched %d new records from Akva", len(records))
 
 	// Convert to normalized events
 	normalizedEvents := akva.ToNormalizedEvents(records)
@@ -103,36 +109,37 @@ func (p *Poller) Poll(ctx context.Context) error {
 		var err error
 		changedEvents, err = p.filterChangedEvents(ctx, normalizedEvents)
 		if err != nil {
-			log.Printf("Warning: failed to filter changed events: %v", err)
+			log.Printf("[Poller] WARNING: failed to filter changed events: %v", err)
 			changedEvents = normalizedEvents // Fallback: publish all if filtering fails
 		}
 	} else {
-		log.Printf("Warning: MongoDB not available, publishing all events without filtering")
+		log.Printf("[Poller] WARNING: MongoDB not available, publishing all events without filtering")
 		changedEvents = normalizedEvents
 	}
 
 	// Publish only changed events to MQTT
 	if len(changedEvents) > 0 {
-		log.Printf("Attempting to publish %d changed events to MQTT", len(changedEvents))
+		log.Printf("[Poller] Publishing %d changed events to MQTT (out of %d total)", len(changedEvents), len(normalizedEvents))
 		if err := p.mqttPub.PublishBatch(changedEvents); err != nil {
-			log.Printf("Warning: MQTT publish partial failure: %v", err)
+			log.Printf("[Poller] WARNING: MQTT publish error: %v", err)
 			// Don't return error - continue with MongoDB persistence
 		} else {
-			log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(normalizedEvents))
+			log.Printf("[Poller] ✓ Published %d changed events to MQTT", len(changedEvents))
 		}
 	} else {
-		log.Printf("No changes detected (fetched %d records)", len(normalizedEvents))
+		log.Printf("[Poller] No changes detected in %d fetched records", len(normalizedEvents))
 	}
 
 	// Persist to MongoDB (skip if not connected)
 	if p.mongoRepo != nil {
+		log.Printf("[Poller] Persisting %d events to MongoDB...", len(normalizedEvents))
 		if err := p.mongoRepo.InsertBatch(ctx, normalizedEvents); err != nil {
-			log.Printf("Warning: MongoDB insert error (may be duplicates): %v", err)
+			log.Printf("[Poller] WARNING: MongoDB insert error (may be duplicates): %v", err)
 			// Continue anyway - duplicates are expected for idempotency
 		}
-		log.Printf("Persisted %d events to MongoDB", len(normalizedEvents))
+		log.Printf("[Poller] ✓ Persisted %d events to MongoDB", len(normalizedEvents))
 	} else {
-		log.Printf("Warning: MongoDB not available, skipping persistence")
+		log.Printf("[Poller] WARNING: MongoDB not available, skipping persistence")
 	}
 
 	// Update watermark
@@ -150,11 +157,15 @@ func (p *Poller) Poll(ctx context.Context) error {
 	}
 
 	if err := p.watermark.Update(latestTime, idsAtLatest); err != nil {
+		log.Printf("[Poller] ERROR updating watermark: %v", err)
 		return err
 	}
+	log.Printf("[Poller] ✓ Updated watermark - new LastFechaHora: %s", latestTime.Format(time.RFC3339))
 
 	// Update stats
 	p.updateStats(latestTime, int64(len(records)))
+	
+	log.Printf("[Poller] ✓ Poll cycle completed successfully at %s", time.Now().Format(time.RFC3339))
 
 	return nil
 }
