@@ -52,31 +52,37 @@ mosquitto_sub -h mqtt.vmsfish.com -p 8883 -t "feeding/mowi/+/" -u test -P test20
 
 ---
 
-### Opción B: Docker Completo (1-2 horas)
+### Opción B: Docker Completo (5 minutos - Usar script!)
+
+**⚡ RECOMENDADO: Usa el script de deploy (lo hace todo automáticamente)**
 
 ```bash
-# 1. Build frontend
-cd frontend
-npm run build
-
-# 2. Copiar dist al backend
-mkdir -p backend/web
-cp -r frontend/dist backend/web/
-
-# 3. Actualizar config.yaml con credenciales reales
-backend/data/config.yaml
-
-# 4. Levantar stack completo
-docker-compose up -d
-
-# 5. Verificar acceso
-http://localhost:8080
-curl -u admin:admin http://localhost:8080/api/status
-
-# ✅ Resultado: Stack completo en contenedores
+deploy.bat                  # Windows
+./deploy.sh                 # Linux/Mac
 ```
 
-**Ideal para:** Pre-producción, testing exhaustivo
+**El script:**
+- ✅ Verifica Docker
+- ✅ Crea .env si no existe
+- ✅ Build frontend automáticamente
+- ✅ Copia dist al backend
+- ✅ Crea config.yaml si no existe
+- ✅ Construye imágenes Docker
+- ✅ Levanta todos los servicios
+- ✅ Muestra logs en tiempo real
+
+**Si prefieres hacerlo manual:**
+
+```bash
+cd frontend && npm run build
+mkdir -p backend/web && cp -r dist backend/web/
+# Editar: backend/data/config.yaml
+docker-compose up -d
+```
+
+✅ **Resultado:** Stack Docker completo en 5 minutos
+
+**Ideal para:** Pre-producción, testing, o producción rápida
 
 ---
 
@@ -92,18 +98,15 @@ sudo sh get-docker.sh
 # 2. Transferir código
 scp -r omnipoll/ usuario@servidor:/home/usuario/
 
-# 3. Configurar
+# 3. Ejecutar script deploy (¡lo hace todo!)
 cd omnipoll
-# Editar backend/data/config.yaml con credenciales reales
+./deploy.sh
 
-# 4. Levantar
-docker-compose up -d
-
-# 5. Configurar Nginx (HTTPS)
+# 4. Configurar Nginx + SSL (opcional para HTTPS)
 # Ver: PRODUCTION.md sección 3.4
-
-# ✅ Resultado: Omnipoll en producción con SSL
 ```
+
+✅ **Resultado:** Omnipoll en producción con Docker
 
 **Ideal para:** Deployar en infraestructura real
 
@@ -111,22 +114,23 @@ docker-compose up -d
 
 ## 📋 Requisitos Mínimos
 
-| Componente | Para Testing | Para Producción |
-|-----------|--------------|-----------------|
-| **Backend** | Compilado | Docker ✅ |
-| **Frontend** | npm dev | Docker ✅ |
-| **SQL Server** | Docker o remoto | Remoto |
-| **MongoDB** | Docker | Docker ✅ |
-| **MQTT** | Nube ✅ | Nube ✅ |
-| **SSL/HTTPS** | No | Sí |
-| **Dominio** | No | Sí |
-| **Nginx** | No | Recomendado |
+| Componente     | Para Testing    | Para Producción |
+| -------------- | --------------- | --------------- |
+| **Backend**    | Compilado       | Docker ✅       |
+| **Frontend**   | npm dev         | Docker ✅       |
+| **SQL Server** | Docker o remoto | Remoto          |
+| **MongoDB**    | Docker          | Docker ✅       |
+| **MQTT**       | Nube ✅         | Nube ✅         |
+| **SSL/HTTPS**  | No              | Sí              |
+| **Dominio**    | No              | Sí              |
+| **Nginx**      | No              | Recomendado     |
 
 ---
 
 ## 🎯 Roadmap Rápido
 
 ### Semana 1: Validación (AHORA)
+
 ```
 [ ] Lunes: Ejecutar setup-testing.bat
 [ ] Martes: Insertar datos SQL y verificar flujo
@@ -136,6 +140,7 @@ docker-compose up -d
 ```
 
 ### Semana 2: Pre-Producción
+
 ```
 [ ] Lunes: Build completo (frontend + backend)
 [ ] Martes: Levantar stack Docker local
@@ -145,6 +150,7 @@ docker-compose up -d
 ```
 
 ### Semana 3: Producción
+
 ```
 [ ] Lunes: Setup servidor Linux
 [ ] Martes: Deploy inicial
@@ -158,22 +164,26 @@ docker-compose up -d
 ## 📚 Documentación por Rol
 
 ### Para Desarrollador
+
 - `README.md` - Visión general
 - `ARCHITECTURE.md` - Diseño técnico
 - `CRUD_IMPLEMENTATION.md` - Endpoints
 - `JSON_FLOW.md` - Flujo de transformación
 
 ### Para QA / Tester
+
 - `TESTING_JSON.md` - Testing guide
 - `TESTING_GUIDE.md` - Test cases
 - `JSON_EXAMPLES.md` - Ejemplos reales
 
 ### Para DevOps / SysAdmin
+
 - `PRODUCTION.md` - Deployment options
 - `DEPLOY.md` - Docker Compose setup
 - `setup-testing.sh / .bat` - Scripts automation
 
 ### Para Operaciones
+
 - `STATUS.md` - Estado actual
 - `CONNECTION_STATUS_FIX.md` - Troubleshooting
 - Logs en `/app/data/` (producción)
@@ -219,20 +229,24 @@ Permitir solo:
 ## 🆘 Troubleshooting Rápido
 
 ### "MQTT desconectado en dashboard"
+
 → Backend está corriendo, espera 5 segundos y refresh
 → Ver: `CONNECTION_STATUS_FIX.md`
 
 ### "No hay datos en Eventos"
+
 → Verificar SQL Server tiene datos
 → Ver logs del backend: "Fetched X records"
 → Ver: `TESTING_JSON.md`
 
 ### "JSONs no se publican a MQTT"
+
 → Verificar MongoDB disponible (deduplicación)
 → Ver logs: "Published X events to MQTT"
 → Ver: `JSON_FLOW.md`
 
 ### "Error de conexión en frontend"
+
 → Verificar `/api/status` retorna conexiones
 → Backend debe estar en `localhost:8080`
 → CORS configurado automáticamente
@@ -242,14 +256,17 @@ Permitir solo:
 ## 📞 Contacto y Soporte
 
 ### Documentación
+
 - Ver documentos `.md` en raíz del proyecto
 - ~2000+ líneas de documentación exhaustiva
 
 ### Logs
+
 - Backend logs: stdout/stderr
 - Production logs: `/app/data/logs/` (en Docker)
 
 ### Git History
+
 ```bash
 git log --oneline  # Ver cambios
 git show <commit>  # Ver detalles
@@ -281,6 +298,7 @@ No Implementado (Por Fuera del Scope):
 ## 📈 Capacidad y Performance
 
 ### Características Verificadas
+
 ```
 ✅ Procesar 100+ eventos por segundo
 ✅ Almacenar millones de registros en MongoDB
@@ -291,6 +309,7 @@ No Implementado (Por Fuera del Scope):
 ```
 
 ### Límites Conocidos
+
 ```
 ⚠️ Sin particionamiento: ~10M eventos en MongoDB antes de lentitud
 ⚠️ Sin índices adicionales: queries lentas en ranges grandes
@@ -299,6 +318,7 @@ No Implementado (Por Fuera del Scope):
 ```
 
 ### Mejoras de Performance (Futuro)
+
 ```
 [ ] MongoDB indexing y partitioning
 [ ] Redis caching
@@ -312,6 +332,7 @@ No Implementado (Por Fuera del Scope):
 ## 🎓 Ejemplo: Ir a Producción en 24 Horas
 
 ### Mañana (9:00 - 13:00)
+
 ```
 09:00 - 09:30: Revisar documentación (README, PRODUCTION.md)
 09:30 - 10:30: Setup servidor Linux (Docker + Docker Compose)
@@ -321,6 +342,7 @@ No Implementado (Por Fuera del Scope):
 ```
 
 ### Tarde (14:00 - 18:00)
+
 ```
 14:00 - 14:30: Deploy en servidor
 14:30 - 15:00: Configurar Nginx + SSL
@@ -330,6 +352,7 @@ No Implementado (Por Fuera del Scope):
 ```
 
 ### Al Día Siguiente
+
 ```
 Monitoreo 24/7
 Alertas configuradas
@@ -377,20 +400,37 @@ Go Live:
 
 ---
 
-## 🚀 ¡SIGUIENTE PASO!
+## 🚀 ¡SIGUIENTE PASO! (Elige uno)
 
-Elige la opción que prefieras:
+### 👉 Recomendación Rápida
 
-### 👉 Recomendación
-**Comienza con Opción A (Testing Local)** → valida todo funciona
-→ Luego **Opción B (Docker)** → simula producción
-→ Finalmente **Opción C (Linux)** → ve a producción real
+**Si quieres probar HOY (5 min):**
+```bash
+deploy.bat                  # Windows
+./deploy.sh                 # Linux/Mac
+```
+
+**Si quieres Testing Completo (30 min):**
+```bash
+setup-testing.bat           # Windows
+./setup-testing.sh          # Linux/Mac
+```
+
+---
+
+### 📈 Roadmap Progresivo
+
+1. **OPCIÓN A:** Testing Local (30 min) → Valida todo funciona
+2. **OPCIÓN B:** Docker Deploy (5 min) → Simula producción
+3. **OPCIÓN C:** Linux Server (2-3 h) → Producción real
 
 ---
 
 **Estado del Proyecto:** ✅ **LISTO PARA PRODUCCIÓN**  
 **Documentación:** ✅ **COMPLETA**  
-**Testing:** ✅ **GUÍAS DISPONIBLES**  
-**Setup Scripts:** ✅ **AUTOMATIZADO**  
+**Scripts de Deploy:** ✅ **AUTOMATIZADOS (deploy.sh / deploy.bat)**  
+**Testing Guides:** ✅ **INCLUIDAS**
 
-**¡A qué esperas? ¡Vamos a producción! 🚀**
+## ¡A qué esperas? ¡Vamos! 🚀
+
+**`./deploy.sh` o `deploy.bat` y listo en 5 minutos**
