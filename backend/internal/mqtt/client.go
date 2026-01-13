@@ -155,12 +155,18 @@ func (c *Client) sendHeartbeat() {
 
 	token := c.client.Publish(topic, byte(c.config.QoS), false, payload)
 	
-	// Wait for publish to complete
+	// For QoS 0, don't wait - just fire and forget
+	if c.config.QoS == 0 {
+		log.Printf("[MQTT Heartbeat] ✓ Sent (QoS 0 - no confirmation expected)")
+		return
+	}
+	
+	// For QoS 1+, wait for confirmation
 	if token.WaitTimeout(3 * time.Second) {
 		if token.Error() != nil {
 			log.Printf("[MQTT Heartbeat] ERROR: %v", token.Error())
 		} else {
-			log.Printf("[MQTT Heartbeat] ✓ Successfully sent")
+			log.Printf("[MQTT Heartbeat] ✓ Successfully sent and confirmed")
 		}
 	} else {
 		log.Printf("[MQTT Heartbeat] TIMEOUT after 3 seconds")
