@@ -2,14 +2,16 @@
 
 ## ✅ Lo que se completó
 
-### 1. **CRUD de Eventos** 
-   - ✅ GET `/api/events` - Listado con paginación y filtros
-   - ✅ GET `/api/events/:id` - Obtener evento individual
-   - ✅ PUT `/api/events/:id` - Actualizar evento
-   - ✅ DELETE `/api/events/:id` - Eliminar evento individual
-   - ✅ DELETE `/api/events/batch` - Eliminar múltiples eventos
+### 1. **CRUD de Eventos**
+
+- ✅ GET `/api/events` - Listado con paginación y filtros
+- ✅ GET `/api/events/:id` - Obtener evento individual
+- ✅ PUT `/api/events/:id` - Actualizar evento
+- ✅ DELETE `/api/events/:id` - Eliminar evento individual
+- ✅ DELETE `/api/events/batch` - Eliminar múltiples eventos
 
 **Filtros disponibles:**
+
 - Por rango de fechas (startDate/endDate)
 - Por fuente (source)
 - Por nombre de unidad (unitName)
@@ -17,19 +19,22 @@
 - Paginación configurable (hasta 500 items por página)
 
 ### 2. **CRUD de Configuración**
-   - ✅ GET `/api/config` - Obtener configuración actual (contraseñas ocultas)
-   - ✅ PUT `/api/config` - Actualizar configuración con validación
+
+- ✅ GET `/api/config` - Obtener configuración actual (contraseñas ocultas)
+- ✅ PUT `/api/config` - Actualizar configuración con validación
 
 **Características:**
-- Preserva contraseñas automáticamente si se envía "********"
+
+- Preserva contraseñas automáticamente si se envía "**\*\*\*\***"
 - Mascara datos sensibles en respuestas
 - Soporta actualización parcial
 
 ### 3. **CRUD de Logs**
-   - ✅ GET `/api/logs` - Obtener logs con filtros
-   - ✅ Filtrado por nivel (INFO, WARN, ERROR, DEBUG)
-   - ✅ Paginación configurable
-   - ✅ Ordenamiento por timestamp
+
+- ✅ GET `/api/logs` - Obtener logs con filtros
+- ✅ Filtrado por nivel (INFO, WARN, ERROR, DEBUG)
+- ✅ Paginación configurable
+- ✅ Ordenamiento por timestamp
 
 ## 📁 Archivos Creados
 
@@ -74,6 +79,7 @@ Total: 246 líneas de código nuevo, 36 líneas eliminadas
 ### Respuestas JSON Consistentes
 
 **Éxito:**
+
 ```json
 {
   "success": true,
@@ -86,6 +92,7 @@ Total: 246 líneas de código nuevo, 36 líneas eliminadas
 ```
 
 **Error:**
+
 ```json
 {
   "success": false,
@@ -102,18 +109,21 @@ Total: 246 líneas de código nuevo, 36 líneas eliminadas
 ### Autenticación
 
 Todos los endpoints están protegidos con **HTTP Basic Auth**
+
 - Username: `admin` (configurable)
 - Password: Desde configuración (encriptada)
 
 ### Filtros Avanzados
 
 **Eventos:**
+
 - Rango de fechas
 - Source (fuente de datos)
 - Unit Name (búsqueda)
 - Ordenamiento personalizado
 
 **Logs:**
+
 - Por nivel de severidad
 - Paginación
 
@@ -129,14 +139,14 @@ Para completar la implementación, puedes:
 
 ## 📊 Estado del Proyecto
 
-| Componente | Estado | Progreso |
-|-----------|--------|----------|
-| Backend CRUD | ✅ Completo | 100% |
-| API REST | ✅ Completo | 100% |
-| Validación | ✅ Básica | 100% |
-| Documentación | ✅ Sí | 100% |
-| Frontend Conexión | ⏳ Pendiente | 0% |
-| Tests | ⏳ Pendiente | 0% |
+| Componente        | Estado       | Progreso |
+| ----------------- | ------------ | -------- |
+| Backend CRUD      | ✅ Completo  | 100%     |
+| API REST          | ✅ Completo  | 100%     |
+| Validación        | ✅ Básica    | 100%     |
+| Documentación     | ✅ Sí        | 100%     |
+| Frontend Conexión | ⏳ Pendiente | 0%       |
+| Tests             | ⏳ Pendiente | 0%       |
 
 ## 💻 Compilación
 

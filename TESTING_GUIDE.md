@@ -11,6 +11,7 @@
 ### Autenticación Básica
 
 Todos los comandos necesitan autenticación:
+
 ```bash
 # Reemplaza USERNAME:PASSWORD con tus credenciales
 curl -u admin:password http://localhost:8080/api/...
@@ -43,6 +44,7 @@ curl -u admin:password "http://localhost:8080/api/events?source=Akva&unitName=Ta
 ```
 
 **Respuesta esperada:**
+
 ```json
 {
   "success": true,
@@ -71,6 +73,7 @@ curl -u admin:password "http://localhost:8080/api/events/Akva:12345"
 ```
 
 **Respuesta esperada:**
+
 ```json
 {
   "success": true,
@@ -115,6 +118,7 @@ curl -X DELETE -u admin:password "http://localhost:8080/api/events/Akva:12345"
 ```
 
 **Respuesta esperada:**
+
 ```json
 {
   "success": true,
@@ -138,6 +142,7 @@ curl -X DELETE -u admin:password \
 ```
 
 **Respuesta esperada:**
+
 ```json
 {
   "success": true,
@@ -158,7 +163,7 @@ curl -X DELETE -u admin:password \
 curl -u admin:password "http://localhost:8080/api/config"
 ```
 
-**Respuesta:** Config actual (contraseñas ocultas como "********")
+**Respuesta:** Config actual (contraseñas ocultas como "**\*\*\*\***")
 
 ### 2. Actualizar Configuración (PUT /api/config)
 
@@ -178,7 +183,7 @@ curl -X PUT -u admin:password \
   "http://localhost:8080/api/config"
 ```
 
-**Nota:** Deja contraseñas como "********" para preservar valores actuales
+**Nota:** Deja contraseñas como "**\*\*\*\***" para preservar valores actuales
 
 ---
 
@@ -201,6 +206,7 @@ curl -u admin:password "http://localhost:8080/api/logs?level=WARN&page=1&pageSiz
 ```
 
 **Respuesta esperada:**
+
 ```json
 {
   "success": true,
@@ -237,15 +243,15 @@ function Call-OmnipollAPI {
         [string]$Username = "admin",
         [string]$Password = "password"
     )
-    
+
     $auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($Username):$($Password)"))
     $headers = @{
         "Authorization" = "Basic $auth"
         "Content-Type" = "application/json"
     }
-    
+
     $url = "http://localhost:8080$Endpoint"
-    
+
     if ($Body) {
         Invoke-RestMethod -Uri $url -Method $Method -Headers $headers -Body ($Body | ConvertTo-Json)
     } else {
@@ -277,18 +283,22 @@ function Call-OmnipollAPI {
 ## 🐛 Troubleshooting
 
 ### Error 401 (Unauthorized)
+
 - Verifica credenciales de usuario
 - Asegúrate de usar `curl -u username:password`
 
 ### Error 404 (Not Found)
+
 - Verifica que la URL sea correcta
 - Comprueba el ID del evento si es una operación específica
 
 ### Error 500 (Internal Server Error)
+
 - Revisa los logs del servidor
 - Verifica que MongoDB/SQL Server estén conectados
 
 ### Respuesta vacía o timeout
+
 - Asegúrate de que el servidor esté corriendo
 - Verifica la URL base (puerto 8080)
 
@@ -324,4 +334,3 @@ curl -s -u $USER:$PASS "$BASE_URL/api/logs?level=ERROR&pageSize=5" | jq .
 
 echo "=== Prueba completada ==="
 ```
-
