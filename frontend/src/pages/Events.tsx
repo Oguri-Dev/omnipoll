@@ -5,10 +5,10 @@ import { Database, RefreshCw, Trash2, Eye, ChevronLeft, ChevronRight } from 'luc
 
 interface Event {
   _id: string
-  source: string
-  fechaHora: string
-  unitName: string
-  payload?: {
+  Source: string
+  FechaHora: string
+  UnitName: string
+  Payload?: {
     name?: string
     amountGrams?: number
     pelletFishMin?: number
@@ -27,7 +27,7 @@ interface Event {
     fin?: string
     dif?: number
   }
-  ingestedAt: string
+  IngestedAt: string
 }
 
 export default function Events() {
@@ -191,15 +191,15 @@ export default function Events() {
               <tbody>
                 {events.map((event: Event) => (
                   <tr key={event._id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm">{event.source}</td>
-                    <td className="px-6 py-3 text-sm">{event.unitName}</td>
+                    <td className="px-6 py-3 text-sm">{event.Source}</td>
+                    <td className="px-6 py-3 text-sm">{event.UnitName}</td>
                     <td className="px-6 py-3 text-sm">
-                      {new Date(event.fechaHora).toLocaleString()}
+                      {new Date(event.FechaHora).toLocaleString()}
                     </td>
                     <td className="px-6 py-3 text-sm">
-                      {event.payload?.biomasa ? event.payload.biomasa.toFixed(0) : '-'}
+                      {event.Payload?.biomasa ? event.Payload.biomasa.toFixed(0) : '-'}
                     </td>
-                    <td className="px-6 py-3 text-sm">{event.payload?.feedName || '-'}</td>
+                    <td className="px-6 py-3 text-sm">{event.Payload?.feedName || '-'}</td>
                     <td className="px-6 py-3 text-sm">
                       <div className="flex gap-2">
                         <button
@@ -280,16 +280,16 @@ export default function Events() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Source</p>
-                  <p className="font-semibold">{selectedEvent.source}</p>
+                  <p className="font-semibold">{selectedEvent.Source}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Unit Name</p>
-                  <p className="font-semibold">{selectedEvent.unitName}</p>
+                  <p className="font-semibold">{selectedEvent.UnitName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Fecha/Hora</p>
                   <p className="font-semibold">
-                    {new Date(selectedEvent.fechaHora).toLocaleString()}
+                    {new Date(selectedEvent.FechaHora).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function Events() {
                   {Object.entries(selectedEvent)
                     .filter(
                       ([key]) =>
-                        !['_id', 'source', 'unitName', 'fechaHora', 'ingestedAt'].includes(key)
+                        !['_id', 'Source', 'UnitName', 'FechaHora', 'IngestedAt'].includes(key)
                     )
                     .map(([key, value]) => (
                       <div key={key} className="text-sm">
@@ -313,7 +313,7 @@ export default function Events() {
 
               <div className="border-t pt-4">
                 <p className="text-xs text-gray-500">
-                  Ingested at: {new Date(selectedEvent.ingestedAt).toLocaleString()}
+                  Ingested at: {new Date(selectedEvent.IngestedAt).toLocaleString()}
                 </p>
               </div>
             </div>
