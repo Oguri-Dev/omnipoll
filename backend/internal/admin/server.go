@@ -71,6 +71,7 @@ func (s *Server) Start() error {
 	addr := fmt.Sprintf("%s:%d", cfg.Admin.Host, cfg.Admin.Port)
 
 	mux := http.NewServeMux()
+	router := NewRouter()
 
 	// API routes
 	mux.HandleFunc("/api/status", s.withAuth(s.handleStatus))
@@ -81,8 +82,12 @@ func (s *Server) Start() error {
 	mux.HandleFunc("/api/test/sqlserver", s.withAuth(s.handleTestSQLServer))
 	mux.HandleFunc("/api/test/mqtt", s.withAuth(s.handleTestMQTT))
 	mux.HandleFunc("/api/test/mongodb", s.withAuth(s.handleTestMongoDB))
-	mux.HandleFunc("/api/logs", s.withAuth(s.handleLogs))
-	mux.HandleFunc("/api/events", s.withAuth(s.handleEvents))
+	mux.HandleFunc("/api/logs", s.withAuth(s.handleLogsImproved))
+	
+	// Events routes (using custom router for ID support)
+	router.HandleFunc("/api/events", s.withAuth(s.handleEventsRoute))
+	router.HandleFunc("/api/events/", s.withAuth(s.handleEventByID))
+	router.HandleFunc("/api/events/batch", s.withAuth(s.handleEventsBatch))
 
 	// Static files (frontend)
 	if s.staticFS != nil {
@@ -108,6 +113,11 @@ func (s *Server) Start() error {
 <li>POST /api/test/mqtt</li>
 <li>POST /api/test/mongodb</li>
 <li>GET /api/logs</li>
+<li>GET /api/events - List events with pagination</li>
+<li>GET /api/events/:id - Get event by ID</li>
+<li>PUT /api/events/:id - Update event</li>
+<li>DELETE /api/events/:id - Delete event</li>
+<li>DELETE /api/events/batch - Delete multiple events</li>
 </ul>
 </body>
 </html>`))
@@ -117,8 +127,8 @@ func (s *Server) Start() error {
 		})
 	}
 
-	// Wrap with CORS and logging
-	handler := s.withCORS(s.withLogging(mux))
+	// Combine mux and router
+	handler := s.withCORS(s.withLogging(combineHandlers(mux, router)))
 
 	s.server = &http.Server{
 		Addr:         addr,
@@ -130,6 +140,19 @@ func (s *Server) Start() error {
 
 	log.Printf("Admin server starting on http://%s", addr)
 	return s.server.ListenAndServe()
+}
+
+// combineHandlers combines http.Handler and custom Router
+func combineHandlers(mux *http.ServeMux, router *Router) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Try router first for events API
+		if r.URL.Path == "/api/events" || (len(r.URL.Path) > len("/api/events") && r.URL.Path[:len("/api/events")] == "/api/events") {
+			router.ServeHTTP(w, r)
+			return
+		}
+		// Fall back to mux for other routes
+		mux.ServeHTTP(w, r)
+	})
 }
 
 // Stop gracefully stops the server

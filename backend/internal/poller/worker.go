@@ -241,6 +241,46 @@ func (w *Worker) GetRecentEvents(ctx context.Context, limit int) ([]mongo.Histor
 	return w.mongoRepo.GetRecentEvents(ctx, limit)
 }
 
+// QueryEvents queries events with filtering and pagination
+func (w *Worker) QueryEvents(ctx context.Context, opts mongo.QueryOptions) (*mongo.QueryResult, error) {
+	if w.mongoRepo == nil {
+		return nil, fmt.Errorf("mongodb not connected")
+	}
+	return w.mongoRepo.QueryEvents(ctx, opts)
+}
+
+// GetEventByID retrieves a single event by ID
+func (w *Worker) GetEventByID(ctx context.Context, id string) (*mongo.HistoricalEvent, error) {
+	if w.mongoRepo == nil {
+		return nil, fmt.Errorf("mongodb not connected")
+	}
+	return w.mongoRepo.GetByID(ctx, id)
+}
+
+// UpdateEvent updates an event
+func (w *Worker) UpdateEvent(ctx context.Context, id string, update map[string]interface{}) error {
+	if w.mongoRepo == nil {
+		return fmt.Errorf("mongodb not connected")
+	}
+	return w.mongoRepo.UpdateByID(ctx, id, update)
+}
+
+// DeleteEvent deletes an event
+func (w *Worker) DeleteEvent(ctx context.Context, id string) error {
+	if w.mongoRepo == nil {
+		return fmt.Errorf("mongodb not connected")
+	}
+	return w.mongoRepo.DeleteByID(ctx, id)
+}
+
+// DeleteEventsBatch deletes multiple events matching criteria
+func (w *Worker) DeleteEventsBatch(ctx context.Context, source string, beforeDate *time.Time) (int64, error) {
+	if w.mongoRepo == nil {
+		return 0, fmt.Errorf("mongodb not connected")
+	}
+	return w.mongoRepo.DeleteByFilter(ctx, source, beforeDate)
+}
+
 // logEntry adds a log entry
 func (w *Worker) logEntry(level, message string) {
 	entry := events.LogEntry{

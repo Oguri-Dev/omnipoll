@@ -292,37 +292,17 @@ func maskPassword(password string) string {
 	return "********"
 }
 
-// handleEvents returns recent events from MongoDB
-func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+// handleEventsRoute routes event requests to appropriate handlers
+func (s *Server) handleEventsRoute(w http.ResponseWriter, r *http.Request) {
+	// Check if there's an ID in the URL (e.g., /api/events/123)
+	if r.URL.Path != "/api/events" {
+		s.handleEventByID(w, r)
+	} else {
+		// List or create events
+		if r.Method == http.MethodGet {
+			s.handleEventsGet(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
 	}
-
-	if s.worker == nil {
-		http.Error(w, "Worker not initialized", http.StatusInternalServerError)
-		return
-	}
-
-	events, err := s.worker.GetRecentEvents(r.Context(), 100)
-	if err != nil {
-		http.Error(w, "Failed to get events: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Transform MongoDB HistoricalEvent to frontend-friendly format
-	response := make([]map[string]interface{}, 0, len(events))
-	for _, evt := range events {
-		response = append(response, map[string]interface{}{
-			"_id":        evt.ID,
-			"source":     evt.Source,
-			"fechaHora":  evt.FechaHora.Format(time.RFC3339),
-			"unitName":   evt.UnitName,
-			"payload":    evt.Payload,
-			"ingestedAt": evt.IngestedAt.Format(time.RFC3339),
-		})
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
 }

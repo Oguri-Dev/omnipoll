@@ -164,3 +164,170 @@ func (r *Repository) GetEventsByIDs(ctx context.Context, source string, ids []st
 
 	return result, nil
 }
+
+// GetByID returns a single event by ID
+func (r *Repository) GetByID(ctx context.Context, id string) (*HistoricalEvent, error) {
+	var event HistoricalEvent
+	err := r.client.GetCollection().FindOne(ctx, bson.M{"_id": id}).Decode(&event)
+	if err != nil {
+		return nil, err
+	}
+	return &event, nil
+}
+
+// QueryOptions defines filtering and pagination options
+type QueryOptions struct {
+	Page      int                  `json:"page"`      // 1-based page number
+	PageSize  int                  `json:"pageSize"`  // Items per page
+	StartDate *time.Time           `json:"startDate"` // Filter by date range
+	EndDate   *time.Time           `json:"endDate"`
+	Source    string               `json:"source"`    // Filter by source (Akva, etc)
+	UnitName  string               `json:"unitName"`  // Filter by unit name
+	SortBy    string               `json:"sortBy"`    // "fechaHora" or "ingestedAt"
+	SortOrder int                  `json:"sortOrder"` // 1 for ascending, -1 for descending
+}
+
+// QueryResult represents paginated query results
+type QueryResult struct {
+	Data       []HistoricalEvent `json:"data"`
+	Total      int64             `json:"total"`
+	Page       int               `json:"page"`
+	PageSize   int               `json:"pageSize"`
+	TotalPages int               `json:"totalPages"`
+}
+
+// QueryEvents retrieves events with filtering and pagination
+func (r *Repository) QueryEvents(ctx context.Context, opts QueryOptions) (*QueryResult, error) {
+	// Build filter
+	filter := bson.M{}
+
+	if opts.StartDate != nil || opts.EndDate != nil {
+		dateFilter := bson.M{}
+		if opts.StartDate != nil {
+			dateFilter["$gte"] = opts.StartDate
+		}
+		if opts.EndDate != nil {
+			dateFilter["$lte"] = opts.EndDate
+		}
+		filter["fechaHora"] = dateFilter
+	}
+
+	if opts.Source != "" {
+		filter["source"] = opts.Source
+	}
+
+	if opts.UnitName != "" {
+		filter["unitName"] = bson.M{"$regex": opts.UnitName, "$options": "i"} // Case-insensitive
+	}
+
+	// Count total documents
+	total, err := r.client.GetCollection().CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count documents: %w", err)
+	}
+
+	// Set default pagination values
+	if opts.Page < 1 {
+		opts.Page = 1
+	}
+	if opts.PageSize < 1 {
+		opts.PageSize = 50
+	}
+	if opts.PageSize > 500 {
+		opts.PageSize = 500 // Max page size
+	}
+
+	// Set default sort
+	if opts.SortBy == "" {
+		opts.SortBy = "ingestedAt"
+	}
+	if opts.SortOrder != 1 {
+		opts.SortOrder = -1
+	}
+
+	// Build query options
+	skip := int64((opts.Page - 1) * opts.PageSize)
+	findOpts := options.Find().
+		SetSkip(skip).
+		SetLimit(int64(opts.PageSize)).
+		SetSort(bson.D{{Key: opts.SortBy, Value: opts.SortOrder}})
+
+	cursor, err := r.client.GetCollection().Find(ctx, filter, findOpts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query events: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var events []HistoricalEvent
+	if err := cursor.All(ctx, &events); err != nil {
+		return nil, fmt.Errorf("failed to decode events: %w", err)
+	}
+
+	if events == nil {
+		events = []HistoricalEvent{}
+	}
+
+	totalPages := (int(total) + opts.PageSize - 1) / opts.PageSize
+
+	return &QueryResult{
+		Data:       events,
+		Total:      total,
+		Page:       opts.Page,
+		PageSize:   opts.PageSize,
+		TotalPages: totalPages,
+	}, nil
+}
+
+// UpdateByID updates an event
+func (r *Repository) UpdateByID(ctx context.Context, id string, update map[string]interface{}) error {
+	// Don't allow updating _id or ingestedAt
+	delete(update, "_id")
+	delete(update, "ingestedAt")
+
+	result := r.client.GetCollection().FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": update},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+
+	if result.Err() != nil {
+		return fmt.Errorf("failed to update event: %w", result.Err())
+	}
+
+	return nil
+}
+
+// DeleteByID deletes an event
+func (r *Repository) DeleteByID(ctx context.Context, id string) error {
+	result, err := r.client.GetCollection().DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return fmt.Errorf("failed to delete event: %w", err)
+	}
+
+	if result.DeletedCount == 0 {
+		return fmt.Errorf("event not found")
+	}
+
+	return nil
+}
+
+// DeleteByFilter deletes events matching a filter
+func (r *Repository) DeleteByFilter(ctx context.Context, source string, startDate *time.Time) (int64, error) {
+	filter := bson.M{}
+
+	if source != "" {
+		filter["source"] = source
+	}
+
+	if startDate != nil {
+		filter["ingestedAt"] = bson.M{"$lt": startDate}
+	}
+
+	result, err := r.client.GetCollection().DeleteMany(ctx, filter)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete events: %w", err)
+	}
+
+	return result.DeletedCount, nil
+}
