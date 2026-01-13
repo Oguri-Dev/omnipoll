@@ -28,7 +28,7 @@ export default function Configuration() {
     queryFn: api.getConfig,
   })
 
-  const config = response?.data || {}
+  const config = response || {}
 
   const saveConfig = useMutation({
     mutationFn: api.saveConfig,

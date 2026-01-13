@@ -192,6 +192,7 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Printf("[config] Config saved successfully")
+		// Note: Worker will reload config on next Initialize() call or manual trigger
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})

@@ -132,6 +132,60 @@ func (w *Worker) Stop() {
 	w.logEntry("info", "Worker stopped")
 }
 
+// ReloadConfig is disabled due to race condition issues
+// TODO: Implement proper synchronization before enabling this feature
+// For now, config changes are saved but MQTT/SQL reconnection requires server restart
+/*
+func (w *Worker) ReloadConfig(ctx context.Context) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	cfg := w.configManager.Get()
+	w.logEntry("info", "Reloading configuration...")
+
+	// Reconnect MQTT if config changed
+	if w.mqttClient != nil {
+		w.mqttClient.Disconnect()
+	}
+	w.mqttClient = mqtt.NewClient(cfg.MQTT)
+	if err := w.mqttClient.Connect(); err != nil {
+		w.logEntry("warn", "Failed to reconnect to MQTT: "+err.Error())
+	} else {
+		w.logEntry("info", "Reconnected to MQTT broker with new config")
+	}
+	w.mqttPub = mqtt.NewPublisher(w.mqttClient)
+
+	// Reconnect SQL Server if config changed
+	if w.akvaClient != nil {
+		w.akvaClient.Disconnect()
+	}
+	w.akvaClient = akva.NewClient(cfg.SQLServer)
+	if err := w.akvaClient.Connect(ctx); err != nil {
+		w.logEntry("warn", "Failed to reconnect to SQL Server: "+err.Error())
+	} else {
+		w.logEntry("info", "Reconnected to SQL Server with new config")
+	}
+
+	// Reconnect MongoDB if config changed
+	if w.mongoClient != nil {
+		w.mongoClient.Disconnect(ctx)
+	}
+	w.mongoClient = mongo.NewClient(cfg.MongoDB)
+	if err := w.mongoClient.Connect(ctx); err != nil {
+		w.logEntry("warn", "Failed to reconnect to MongoDB: "+err.Error())
+	} else {
+		w.logEntry("info", "Reconnected to MongoDB with new config")
+	}
+	w.mongoRepo = mongo.NewRepository(w.mongoClient)
+
+	// Update poller with new config
+	w.poller = NewPoller(cfg.Polling, w.akvaClient, w.mqttPub, w.mongoRepo, w.watermark)
+
+	w.logEntry("info", "Configuration reloaded successfully")
+	return nil
+}
+*/
+
 // run is the main polling loop
 func (w *Worker) run() {
 	cfg := w.configManager.Get()

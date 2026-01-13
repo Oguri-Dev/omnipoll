@@ -5,7 +5,7 @@ const client = axios.create({
   timeout: 10000, // 10 second timeout
   auth: {
     username: 'admin',
-    password: 'admin123',
+    password: 'admin',
   },
 })
 
