@@ -5,13 +5,13 @@ sqlServer:
   user: sa
   password: ''
 mqtt:
-  broker: mqtt.vmsfish.com
+  broker: vmsfish.com
   port: 8883
   topic: feeding/mowi/
   clientId: omnipoll-api-test
   user: test
   password: test2025
-  qos: 1
+  qos: 0
   useTLS: true
 mongodb:
   uri: mongodb://mongodb:27017

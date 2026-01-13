@@ -60,12 +60,6 @@ func (c *Client) Connect() error {
 			c.connected = true
 			c.mu.Unlock()
 			fmt.Printf("[MQTT Client] Connected successfully to %s\n", broker)
-			fmt.Printf("[MQTT Client] Triggering heartbeat...\n")
-			// Send heartbeat when connection is fully established
-			go func() {
-				time.Sleep(100 * time.Millisecond) // Small delay to ensure connection is ready
-				c.sendHeartbeat()
-			}()
 		})
 
 	if c.config.User != "" {
@@ -85,12 +79,6 @@ func (c *Client) Connect() error {
 	c.client = client
 	c.connected = true
 	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
-	
-	// Wait a moment for connection to be fully ready, then send heartbeat
-	go func() {
-		time.Sleep(500 * time.Millisecond)
-		c.sendHeartbeat()
-	}()
 	
 	return nil
 }
@@ -136,50 +124,6 @@ func (c *Client) sendHeartbeat() {
 		return
 	}
 
-	heartbeat := map[string]interface{}{
-		"status":    "connected",
-		"timestamp": time.Now().Format(time.RFC3339),
-		"clientId":  c.config.ClientID,
-		"version":   "1.0",
-	}
-
-	payload, err := json.Marshal(heartbeat)
-	if err != nil {
-		log.Printf("[MQTT Heartbeat] Failed to marshal: %v", err)
-		return
-	}
-
-	topic := "feeding/mowi/status"
-	log.Printf("[MQTT Heartbeat] Sending to topic: %s", topic)
-	log.Printf("[MQTT Heartbeat] Payload: %s", string(payload))
-
-	token := c.client.Publish(topic, byte(c.config.QoS), false, payload)
-	
-	// For QoS 0, don't wait - just fire and forget
-	if c.config.QoS == 0 {
-		log.Printf("[MQTT Heartbeat] ✓ Sent (QoS 0 - no confirmation expected)")
-		return
-	}
-	
-	// For QoS 1+, wait for confirmation
-	if token.WaitTimeout(3 * time.Second) {
-		if token.Error() != nil {
-			log.Printf("[MQTT Heartbeat] ERROR: %v", token.Error())
-		} else {
-			log.Printf("[MQTT Heartbeat] ✓ Successfully sent and confirmed")
-		}
-	} else {
-		log.Printf("[MQTT Heartbeat] TIMEOUT after 3 seconds")
-	}
-}
-
-// TestConnection tests the MQTT connection
-func (c *Client) TestConnection() error {
-	if c.client == nil {
-		if err := c.Connect(); err != nil {
-			return err
-		}
-	}
 
 	if !c.client.IsConnected() {
 		return fmt.Errorf("not connected to MQTT broker")

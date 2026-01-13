@@ -164,22 +164,40 @@ export default function Events() {
                 <tr>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Centro</th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Jaula</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Fecha/Hora</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Fecha/Hora
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Día</th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Inicio</th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Fin</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Duración</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Duración
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Gramos</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Pellet/Fish/Min</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Pellet/Fish/Min
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Peces</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Peso Prom</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Peso Prom
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Biomasa</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Pellet PK</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Alimento</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Pellet PK
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Alimento
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Silo</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Dosificador</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Gramos/Seg</th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Kg Ton/Min</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Dosificador
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Gramos/Seg
+                  </th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">
+                    Kg Ton/Min
+                  </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Marca</th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Actions</th>
                 </tr>
@@ -189,22 +207,42 @@ export default function Events() {
                   <tr key={event._id} className="border-b hover:bg-gray-50">
                     <td className="px-2 py-2 text-xs">{event.Payload?.name || '-'}</td>
                     <td className="px-2 py-2 text-xs">{event.UnitName}</td>
-                    <td className="px-2 py-2 text-xs">{new Date(event.FechaHora).toLocaleString()}</td>
+                    <td className="px-2 py-2 text-xs">
+                      {new Date(event.FechaHora).toLocaleString()}
+                    </td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.dia || '-'}</td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.inicio || '-'}</td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.fin || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.dif ? `${event.Payload.dif}s` : '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.amountGrams?.toFixed(2) || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.pelletFishMin?.toFixed(4) || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.fishCount?.toFixed(0) || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.pesoProm?.toFixed(2) || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.biomasa?.toFixed(0) || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.pelletPK?.toFixed(3) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.dif ? `${event.Payload.dif}s` : '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.amountGrams?.toFixed(2) || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.pelletFishMin?.toFixed(4) || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.fishCount?.toFixed(0) || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.pesoProm?.toFixed(2) || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.biomasa?.toFixed(0) || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.pelletPK?.toFixed(3) || '-'}
+                    </td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.feedName || '-'}</td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.siloName || '-'}</td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.doserName || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.gramsPerSec?.toFixed(2) || '-'}</td>
-                    <td className="px-2 py-2 text-xs">{event.Payload?.kgTonMin?.toFixed(6) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.gramsPerSec?.toFixed(2) || '-'}
+                    </td>
+                    <td className="px-2 py-2 text-xs">
+                      {event.Payload?.kgTonMin?.toFixed(6) || '-'}
+                    </td>
                     <td className="px-2 py-2 text-xs">{event.Payload?.marca || 0}</td>
                     <td className="px-2 py-2 text-xs\">
                       <div className="flex gap-1">
