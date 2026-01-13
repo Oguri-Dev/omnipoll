@@ -2,6 +2,7 @@ package mqtt
 
 import (
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -114,14 +115,14 @@ func (c *Client) GetClient() paho.Client {
 func (c *Client) GetConfig() config.MQTTConfig {
 	return c.config
 }
-
-// TestConnection tests the MQTT connection
+TestConnection tests the MQTT connection
 func (c *Client) TestConnection() error {
 	if c.client == nil {
 		if err := c.Connect(); err != nil {
 			return err
 		}
-	}
+	}	}
+
 
 	if !c.client.IsConnected() {
 		return fmt.Errorf("not connected to MQTT broker")
