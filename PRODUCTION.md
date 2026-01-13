@@ -44,6 +44,7 @@
 ## 🔷 OPCIÓN 1: Testing Local (Recomendado Primero)
 
 ### Estado Actual
+
 ```
 ✅ Backend compilado y corriendo
 ✅ Frontend en desarrollo (npm run dev)
@@ -67,11 +68,13 @@ docker-compose up -d mongodb
 ```
 
 **Verificar estado:**
+
 ```bash
 docker ps
 ```
 
 Expected:
+
 ```
 CONTAINER ID   IMAGE                      STATUS
 abc123         mcr.microsoft.com/mssql... Up 2 minutes
@@ -88,6 +91,7 @@ docker logs mssql | tail -20
 #### 1.3 Verificar Backend detecta las conexiones
 
 **En terminal backend:**
+
 ```
 2026/01/12 14:30:00 worker.go:346: [info] Watermark loaded
 2026/01/12 14:30:00 worker.go:346: [info] Connected to MQTT broker
@@ -111,25 +115,26 @@ sqlcmd -S localhost,1433 -U sa -P AdminPassword123!
 ```
 
 **Script SQL:**
+
 ```sql
 USE FTFeeding
 
 -- Insertar evento de prueba
 INSERT INTO [dbo].[DetalleAlimentacion] (
-    ID, Name, UnitName, FechaHora, AmountGrams, FishCount, PesoProm, 
-    Biomasa, FeedName, SiloName, Dia, Inicio, Fin, Dif, 
+    ID, Name, UnitName, FechaHora, AmountGrams, FishCount, PesoProm,
+    Biomasa, FeedName, SiloName, Dia, Inicio, Fin, Dif,
     PelletFishMin, PelletPK, GramsPerSec, KgTonMin, Marca, DoserName
 ) VALUES (
-    'PROD-001', 
-    'Centro-Principal', 
-    'Jaula-100', 
-    GETUTCDATE(), 
-    250.5, 
-    2000, 
-    125.25, 
-    250500, 
-    'Premium 4.5mm', 
-    'Silo-Principal', 
+    'PROD-001',
+    'Centro-Principal',
+    'Jaula-100',
+    GETUTCDATE(),
+    250.5,
+    2000,
+    125.25,
+    250500,
+    'Premium 4.5mm',
+    'Silo-Principal',
     CAST(GETUTCDATE() AS DATE),
     '08:00',
     '09:00',
@@ -149,12 +154,14 @@ SELECT TOP 5 * FROM [dbo].[DetalleAlimentacion] ORDER BY FechaHora DESC
 #### 1.5 Monitorear Logs en Tiempo Real
 
 **Terminal 1: Backend**
+
 ```bash
 cd f:\vscode\omnipoll\backend
 .\omnipoll.exe
 ```
 
 Buscar logs de polling:
+
 ```
 2026/01/12 14:35:00 poller.go:82: Fetched 1 new records from Akva
 2026/01/12 14:35:00 poller.go:95: Attempting to publish 1 changed events to MQTT
@@ -164,6 +171,7 @@ Buscar logs de polling:
 #### 1.6 Verificar JSON en MQTT
 
 **Terminal 2: MQTT Subscriber**
+
 ```bash
 mosquitto_sub -h mqtt.vmsfish.com -p 8883 \
   -t "feeding/mowi/+/" \
@@ -173,6 +181,7 @@ mosquitto_sub -h mqtt.vmsfish.com -p 8883 \
 ```
 
 **Output esperado:**
+
 ```
 feeding/mowi/centroprincipal/ {"TimeStampAkva":"2026-01-12T14:35:00Z",...}
 ```
@@ -182,6 +191,7 @@ feeding/mowi/centroprincipal/ {"TimeStampAkva":"2026-01-12T14:35:00Z",...}
 ## 🟢 OPCIÓN 2: Docker Local Completo
 
 ### Caso de Uso
+
 Tienes SQL Server remoto, quieres testear todo en Docker antes de producción.
 
 ### 2.1 Preparar Frontend Build
@@ -213,14 +223,14 @@ Editar `backend/data/config.yaml`:
 
 ```yaml
 sqlServer:
-  host: 192.168.1.100        # IP real del SQL Server
+  host: 192.168.1.100 # IP real del SQL Server
   port: 1433
   database: FTFeeding
   user: sa
   password: 'AdminPassword123!'
 
 mqtt:
-  broker: mosquitto           # Nombre del servicio Docker
+  broker: mosquitto # Nombre del servicio Docker
   port: 1883
   topic: feeding/mowi/
   clientId: omnipoll-production
@@ -229,7 +239,7 @@ mqtt:
   qos: 1
 
 mongodb:
-  uri: mongodb://mongodb:27017    # Nombre del servicio Docker
+  uri: mongodb://mongodb:27017 # Nombre del servicio Docker
   database: omnipoll
   collection: historical_events
 
@@ -238,10 +248,10 @@ polling:
   batchSize: 100
 
 admin:
-  host: 0.0.0.0              # Escuchar en todas las interfaces
+  host: 0.0.0.0 # Escuchar en todas las interfaces
   port: 8080
   username: admin
-  password: 'admin'          # Cambiar después
+  password: 'admin' # Cambiar después
 ```
 
 ### 2.4 Actualizar Dockerfile (si es necesario)
@@ -302,6 +312,7 @@ docker logs omnipoll | grep -i mqtt
 ## 🟠 OPCIÓN 3: Servidor Linux Production
 
 ### Requisitos
+
 - Servidor Linux (Ubuntu 20.04+)
 - Docker + Docker Compose instalados
 - Acceso SSH
@@ -376,7 +387,7 @@ sudo tee /etc/nginx/sites-available/omnipoll << EOF
 server {
     listen 80;
     server_name omnipoll.tu-dominio.com;
-    
+
     # Redirigir a HTTPS
     return 301 https://\$server_name\$request_uri;
 }
@@ -384,10 +395,10 @@ server {
 server {
     listen 443 ssl http2;
     server_name omnipoll.tu-dominio.com;
-    
+
     ssl_certificate /etc/letsencrypt/live/omnipoll.tu-dominio.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/omnipoll.tu-dominio.com/privkey.pem;
-    
+
     location / {
         proxy_pass http://localhost:8080;
         proxy_set_header Host \$host;
@@ -503,26 +514,34 @@ aws application-autoscaling register-scalable-target \
 ## 🚀 Opciones Recomendadas por Caso
 
 ### Para Testing Rápido (Esta Semana)
+
 → **OPCIÓN 1: Local Development**
+
 - Lo que tienes ahora
-- + Docker para SQL/Mongo
+- - Docker para SQL/Mongo
 - 30 minutos para estar funcionando
 
 ### Para Pre-Producción (Este Mes)
+
 → **OPCIÓN 2: Docker Local Completo**
+
 - Stack completo en Docker
 - Simula producción sin infraestructura
 - 1-2 horas de setup
 
 ### Para Producción Inmediata
+
 → **OPCIÓN 3: Linux Server + Nginx**
+
 - Servidor dedicado o VM
 - Simple de mantener
 - Costo bajo
 - 2-3 horas de setup
 
 ### Para Alta Escala
+
 → **OPCIÓN 4: Cloud (AWS/Azure/GCP)**
+
 - Auto-scaling automático
 - Managed services (no mantener)
 - Más caro pero muy confiable
@@ -532,15 +551,15 @@ aws application-autoscaling register-scalable-target \
 
 ## 📊 Comparativa de Opciones
 
-| Aspecto | Opción 1 | Opción 2 | Opción 3 | Opción 4 |
-|---------|----------|----------|----------|----------|
-| **Setup Time** | 30 min | 1-2 h | 2-3 h | 1 semana |
-| **Costo** | $0 | $0 | $20-50/mes | $100-500/mes |
-| **Escalabilidad** | No | Limitada | Manual | Automática |
-| **HA/Redundancy** | No | No | Manual | Automática |
-| **Monitoring** | Basic | Basic | Manual | Incluido |
-| **SSL/HTTPS** | No | No | Sí | Sí |
-| **Ideal Para** | Desarrollo | Pre-prod | Pequeña escala | Producción |
+| Aspecto           | Opción 1   | Opción 2 | Opción 3       | Opción 4     |
+| ----------------- | ---------- | -------- | -------------- | ------------ |
+| **Setup Time**    | 30 min     | 1-2 h    | 2-3 h          | 1 semana     |
+| **Costo**         | $0         | $0       | $20-50/mes     | $100-500/mes |
+| **Escalabilidad** | No         | Limitada | Manual         | Automática   |
+| **HA/Redundancy** | No         | No       | Manual         | Automática   |
+| **Monitoring**    | Basic      | Basic    | Manual         | Incluido     |
+| **SSL/HTTPS**     | No         | No       | Sí             | Sí           |
+| **Ideal Para**    | Desarrollo | Pre-prod | Pequeña escala | Producción   |
 
 ---
 

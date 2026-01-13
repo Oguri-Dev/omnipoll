@@ -21,14 +21,17 @@ MQTT Broker (mqtt.vmsfish.com:8883)
 ## 1. Origen de Datos: SQL Server (Akva)
 
 ### Localización
+
 📁 `backend/internal/akva/client.go`
 
 ### Función de Lectura
+
 ```go
 func (c *Client) FetchNewRecords(ctx context.Context, lastFechaHora time.Time, ...) ([]DetalleAlimentacion, error)
 ```
 
 ### Campos Extraídos (DetalleAlimentacion)
+
 ```go
 type DetalleAlimentacion struct {
     ID            string      // Identificador único
@@ -59,19 +62,23 @@ type DetalleAlimentacion struct {
 ## 2. Transformación: Mapper
 
 ### Localización
+
 📁 `backend/internal/akva/mapper.go`
 
 ### Función Principal
+
 ```go
 func ToNormalizedEvent(record DetalleAlimentacion) events.NormalizedEvent
 ```
 
 ### Procesos
+
 1. **Sanitización UTF-8** - Limpia caracteres inválidos
 2. **Conversión de Fechas** - A formato RFC3339
 3. **Mapeo de Campos** - Normaliza nombres de campos a camelCase
 
 ### Estructura Normalizada (NormalizedEvent)
+
 ```go
 type NormalizedEvent struct {
     ID            string    `json:"id"`                  // akva:123
@@ -80,7 +87,7 @@ type NormalizedEvent struct {
     UnitName      string    `json:"unitName"`            // Jaula
     FechaHora     string    `json:"fechaHora"`           // 2026-01-12T23:38:40Z
     Dia           string    `json:"dia"`                 // 2026-01-12
-    Inicio        string    `json:"inicio"`              
+    Inicio        string    `json:"inicio"`
     Fin           string    `json:"fin"`
     Dif           int       `json:"dif"`
     AmountGrams   float64   `json:"amountGrams"`         // 125.5
@@ -104,10 +111,13 @@ type NormalizedEvent struct {
 ## 3. Filtrado (Opcional)
 
 ### Localización
+
 📁 `backend/internal/poller/poller.go` - `filterChangedEvents()`
 
 ### Propósito
+
 Comparar eventos nuevos con MongoDB y solo publicar si hay cambios en campos business-critical:
+
 - `AmountGrams` (cantidad de alimento)
 - `FishCount` (cantidad de peces)
 - `PesoProm` (peso promedio)
@@ -115,6 +125,7 @@ Comparar eventos nuevos con MongoDB y solo publicar si hay cambios en campos bus
 - `FeedName` (alimento)
 
 ### Lógica
+
 ```
 FOR cada evento nuevo:
   IF evento NO existe en MongoDB → PUBLICAR
@@ -127,9 +138,11 @@ FOR cada evento nuevo:
 ## 4. Publicación a MQTT
 
 ### Localización
+
 📁 `backend/internal/mqtt/publisher.go`
 
 ### Función Principal
+
 ```go
 func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error
 ```
@@ -137,6 +150,7 @@ func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error
 ### Transformación a MQTTMessage
 
 **Entrada:** NormalizedEvent
+
 ```json
 {
   "id": "akva:12345",
@@ -154,6 +168,7 @@ func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error
 ```
 
 **Transformación:**
+
 ```go
 msg := MQTTMessage{
     TimeStampAkva:      "2026-01-12T23:38:40Z",          // FechaHora
@@ -170,6 +185,7 @@ msg := MQTTMessage{
 ```
 
 **Salida JSON:**
+
 ```json
 {
   "TimeStampAkva": "2026-01-12T23:38:40Z",
@@ -216,6 +232,7 @@ token.WaitTimeout(10 * time.Second)  // Espera hasta 10 segundos
 ## 5. Flujo Completo con Ejemplo
 
 ### Entrada desde SQL Server
+
 ```
 ID: A001
 Name: Centro-Mowi
@@ -230,6 +247,7 @@ SiloName: Silo-A
 ```
 
 ### Paso 1: Mapper → NormalizedEvent
+
 ```json
 {
   "id": "akva:A001",
@@ -249,11 +267,13 @@ SiloName: Silo-A
 ```
 
 ### Paso 2: Filtrado (opcional)
+
 - ¿Existe en MongoDB? NO → PUBLICAR
 - ¿Cambió biomasa? → PUBLICAR
 - ¿Cambió cantidad? → PUBLICAR
 
 ### Paso 3: Publisher → MQTTMessage
+
 ```json
 {
   "TimeStampAkva": "2026-01-12T23:38:40Z",
@@ -270,6 +290,7 @@ SiloName: Silo-A
 ```
 
 ### Paso 4: Publicación a MQTT
+
 ```
 Topic: feeding/mowi/centromowi/
 QoS: 1
@@ -282,6 +303,7 @@ Broker: mqtt.vmsfish.com:8883
 ## 6. Características del JSON para MQTT
 
 ### ✅ Lo que SÍ incluye
+
 - Timestamps (Akva e Ingesta)
 - Centro y Jaula (identificadores)
 - Datos nutricionales (Gramos, Biomasa, Peces, PesoPromedio)
@@ -289,6 +311,7 @@ Broker: mqtt.vmsfish.com:8883
 - QoS 1 (garantía de al menos una entrega)
 
 ### ❌ Lo que NO incluye
+
 - ID interno (no se envía)
 - Source (no se envía)
 - Campos internos (Dif, PelletFishMin, Marca, etc.)
@@ -299,21 +322,25 @@ Broker: mqtt.vmsfish.com:8883
 ## 7. Validación de JSON
 
 ### Paso 1: json.Marshal() en Publisher
+
 ```go
 payload, err := json.Marshal(msg)
 if err != nil {
     return fmt.Errorf("failed to marshal event: %w", err)
 }
 ```
+
 ✅ Valida tipos y estructura antes de enviar
 
 ### Paso 2: Publicación
+
 ```go
 token := client.Publish(topic, cfg.QoS, false, payload)
 if token.WaitTimeout(10 * time.Second) && token.Error() != nil {
     return fmt.Errorf("failed to publish message: %w", token.Error())
 }
 ```
+
 ✅ Espera confirmación del broker (QoS 1)
 
 ---
@@ -321,12 +348,14 @@ if token.WaitTimeout(10 * time.Second) && token.Error() != nil {
 ## 8. Estado Actual en Tu Sistema
 
 ### ✅ Configurado Correctamente
+
 - MQTT conectado a `mqtt.vmsfish.com:8883`
 - JSON marshalling implementado
 - Topics dinámicos basados en Centro
 - QoS 1 configurado
 
 ### ❌ No Puede Funcionar Todavía
+
 - **SQL Server no disponible** → No hay registros para leer
 - **MongoDB no disponible** → No puede filtrar cambios
 - **Poll error: not connected** → Sin SQL + MongoDB, no hay nothing que procesar
@@ -336,6 +365,7 @@ if token.WaitTimeout(10 * time.Second) && token.Error() != nil {
 ## 9. Cómo Verificar (Cuando tengas Servicios)
 
 ### Opción 1: Ver logs de publicación
+
 ```bash
 # En los logs del backend deberías ver:
 2026/01/12 23:38:50 poller.go:95: Attempting to publish 5 changed events to MQTT
@@ -343,11 +373,13 @@ if token.WaitTimeout(10 * time.Second) && token.Error() != nil {
 ```
 
 ### Opción 2: Suscribirse a MQTT (con cliente externo)
+
 ```bash
 mosquitto_sub -h mqtt.vmsfish.com -p 8883 -t "feeding/mowi/+/" --cafile ca.crt -u test -P test2025
 ```
 
 ### Opción 3: Usar MQTT Explorer (GUI)
+
 - Host: mqtt.vmsfish.com
 - Port: 8883
 - Username: test
@@ -358,14 +390,14 @@ mosquitto_sub -h mqtt.vmsfish.com -p 8883 -t "feeding/mowi/+/" --cafile ca.crt -
 
 ## 10. Resumen de Archivos Involucrados
 
-| Archivo | Responsabilidad |
-|---------|----------------|
-| `akva/client.go` | Lee de SQL Server |
-| `akva/mapper.go` | Convierte DetalleAlimentacion → NormalizedEvent |
-| `events/event.go` | Define estructura de NormalizedEvent |
-| `mqtt/publisher.go` | Convierte NormalizedEvent → MQTTMessage + JSON |
-| `poller/poller.go` | Orquesta todo (fetch → filter → publish) |
-| `config.yaml` | Configuración (broker, credenciales, QoS) |
+| Archivo             | Responsabilidad                                 |
+| ------------------- | ----------------------------------------------- |
+| `akva/client.go`    | Lee de SQL Server                               |
+| `akva/mapper.go`    | Convierte DetalleAlimentacion → NormalizedEvent |
+| `events/event.go`   | Define estructura de NormalizedEvent            |
+| `mqtt/publisher.go` | Convierte NormalizedEvent → MQTTMessage + JSON  |
+| `poller/poller.go`  | Orquesta todo (fetch → filter → publish)        |
+| `config.yaml`       | Configuración (broker, credenciales, QoS)       |
 
 ---
 
@@ -377,14 +409,15 @@ Para probar el flujo completo necesitas:
    ```bash
    docker-compose up -d
    ```
-   
 2. **Insertar datos de prueba en SQL Server:**
+
    ```sql
-   INSERT INTO Akva...DetalleAlimentacion 
+   INSERT INTO Akva...DetalleAlimentacion
    VALUES (...)
    ```
 
 3. **Ver logs de publicación:**
+
    ```bash
    # Terminal del backend mostrará los publishes
    tail -f logs.txt

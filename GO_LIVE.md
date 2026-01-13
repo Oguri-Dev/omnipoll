@@ -62,6 +62,7 @@ deploy.bat                  # Windows
 ```
 
 **El script:**
+
 - ✅ Verifica Docker
 - ✅ Crea .env si no existe
 - ✅ Build frontend automáticamente
@@ -405,12 +406,14 @@ Go Live:
 ### 👉 Recomendación Rápida
 
 **Si quieres probar HOY (5 min):**
+
 ```bash
 deploy.bat                  # Windows
 ./deploy.sh                 # Linux/Mac
 ```
 
 **Si quieres Testing Completo (30 min):**
+
 ```bash
 setup-testing.bat           # Windows
 ./setup-testing.sh          # Linux/Mac

@@ -2,7 +2,7 @@
 
 **Creado:** 2026-01-12  
 **Estado:** ✅ LISTO PARA PRODUCCIÓN  
-**Última Actualización:** 2026-01-12 23:45  
+**Última Actualización:** 2026-01-12 23:45
 
 ---
 
@@ -77,7 +77,9 @@ f:\vscode\omnipoll/
 ## 📚 DOCUMENTACIÓN DISPONIBLE (Léelos en Orden)
 
 ### 🚀 PARA EMPEZAR (10 min)
+
 1. **GO_LIVE.md** ⭐ **(START HERE)**
+
    - 3 opciones de deployment
    - Resumen de 1 página
    - Scripts listos para usar
@@ -88,12 +90,15 @@ f:\vscode\omnipoll/
    - Troubleshooting
 
 ### 🏗️ PARA ENTENDER LA ARQUITECTURA (30 min)
+
 3. **README.md**
+
    - Visión general del proyecto
    - Stack tecnológico
    - Setup básico
 
 4. **ARCHITECTURE.md**
+
    - Diagrama de flujo
    - Componentes
    - Decisiones de diseño
@@ -103,12 +108,15 @@ f:\vscode\omnipoll/
    - Estado real vs estado reportado
 
 ### 💻 PARA IMPLEMENTAR (1 hora)
+
 6. **CRUD_IMPLEMENTATION.md**
+
    - Endpoints disponibles
    - Ejemplos de requests/responses
    - Status codes
 
 7. **JSON_FLOW.md** ⭐ **MÁS IMPORTANTE**
+
    - Cómo se transforman los datos
    - De SQL → NormalizedEvent → MQTTMessage
    - Cada paso del flujo
@@ -119,7 +127,9 @@ f:\vscode\omnipoll/
    - Casos de error
 
 ### 🧪 PARA TESTING (2 horas)
+
 9. **TESTING_JSON.md** ⭐ **MÁS IMPORTANTE**
+
    - Cómo testear con datos reales
    - Scripts SQL
    - Cómo monitorear MQTT
@@ -130,13 +140,16 @@ f:\vscode\omnipoll/
     - Validación
 
 ### 🚀 PARA PRODUCCIÓN (3 horas)
+
 11. **PRODUCTION.md** ⭐ **MÁS IMPORTANTE**
+
     - 4 opciones de deployment
     - Setup paso a paso
     - Comparativa de opciones
     - Seguridad
 
 12. **DEPLOY.md**
+
     - Docker Compose detallado
     - Variables de entorno
     - Configuración manual
@@ -147,6 +160,7 @@ f:\vscode\omnipoll/
     - Mejoras futuras
 
 ### 📋 COMPLEMENTARIA
+
 14. **IMPLEMENTATION_SUMMARY.md** - Resumen de lo implementado
 15. **PROJECT_COMPLETION.md** - Checklist de completitud
 
@@ -155,6 +169,7 @@ f:\vscode\omnipoll/
 ## 🔴 ARCHIVOS QUE NECESITAS EDITAR MAÑANA
 
 ### 1. `.env` (Primero)
+
 **Ubicación:** `f:\vscode\omnipoll\.env`
 
 ```bash
@@ -167,27 +182,29 @@ SQL_SERVER_PASSWORD=tu-password                 # ← CAMBIAR
 ```
 
 **Cómo generarlo:**
+
 ```powershell
 # Windows PowerShell
 [System.Guid]::NewGuid().ToString() -replace '-', ''
 ```
 
 ### 2. `backend/data/config.yaml` (Segundo)
+
 **Ubicación:** `f:\vscode\omnipoll\backend\data\config.yaml`
 
 ```yaml
 sqlServer:
-  host: tu-servidor-sql            # ← CAMBIAR
+  host: tu-servidor-sql # ← CAMBIAR
   port: 1433
   database: FTFeeding
-  user: sa                           # ← CAMBIAR
-  password: 'tu-password'            # ← CAMBIAR
+  user: sa # ← CAMBIAR
+  password: 'tu-password' # ← CAMBIAR
 
 mqtt:
-  broker: mosquitto                  # O tu broker MQTT
+  broker: mosquitto # O tu broker MQTT
   port: 1883
   topic: feeding/mowi/
-  clientId: omnipoll-production      # ← CAMBIAR NOMBRE
+  clientId: omnipoll-production # ← CAMBIAR NOMBRE
   user: ''
   password: ''
   qos: 1
@@ -205,7 +222,7 @@ admin:
   host: 0.0.0.0
   port: 8080
   username: admin
-  password: 'cambiar-en-produccion'  # ← CAMBIAR
+  password: 'cambiar-en-produccion' # ← CAMBIAR
 ```
 
 ---
@@ -213,30 +230,35 @@ admin:
 ## ✅ CHECKLIST DE TAREAS PARA MAÑANA
 
 ### Paso 1: Preparación (5 min)
+
 - [ ] Clonar/actualizar código: `git pull`
 - [ ] Ver commits: `git log --oneline -10`
 - [ ] Editar `.env` con credenciales reales
 - [ ] Editar `backend/data/config.yaml`
 
 ### Paso 2: Deploy (5 min)
+
 - [ ] Ejecutar: `deploy.bat` (Windows) o `./deploy.sh` (Linux)
 - [ ] Esperar a que servicios arranquen
 - [ ] Verificar: `http://localhost:8080`
 - [ ] Verificar estado: `docker ps`
 
 ### Paso 3: Testing (30 min)
+
 - [ ] Insertar datos SQL (ver TESTING_JSON.md)
 - [ ] Verificar logs: `docker-compose logs -f omnipoll`
 - [ ] Monitorear MQTT: `mosquitto_sub -h ... -t "feeding/mowi/+/"`
 - [ ] Ver JSONs publicados
 
 ### Paso 4: Validación (15 min)
+
 - [ ] Dashboard muestra datos
 - [ ] Eventos se visualizan
 - [ ] Logs aparecen
 - [ ] Conexiones muestran estado correcto
 
 ### Paso 5: Producción (variable)
+
 - [ ] Seguir instrucciones en PRODUCTION.md
 - [ ] Opción A: Testing Local
 - [ ] Opción B: Docker Completo (recomendado)
@@ -247,6 +269,7 @@ admin:
 ## 🚀 SCRIPTS LISTOS PARA EJECUTAR
 
 ### Opción 1: Deploy Completo (RECOMENDADO)
+
 ```bash
 # Windows
 deploy.bat
@@ -254,10 +277,12 @@ deploy.bat
 # Linux/Mac
 ./deploy.sh
 ```
+
 ⏱️ **Tiempo:** 5 minutos  
-**Resultado:** Stack Docker completo funcionando  
+**Resultado:** Stack Docker completo funcionando
 
 **¿Qué hace?**
+
 - Verifica Docker
 - Build frontend
 - Crea config si no existe
@@ -267,6 +292,7 @@ deploy.bat
 ---
 
 ### Opción 2: Testing Local
+
 ```bash
 # Windows
 setup-testing.bat
@@ -274,8 +300,9 @@ setup-testing.bat
 # Linux/Mac
 ./setup-testing.sh
 ```
+
 ⏱️ **Tiempo:** 2 minutos  
-**Resultado:** MongoDB + MQTT corriendo  
+**Resultado:** MongoDB + MQTT corriendo
 
 **Para:** Verificar conexiones, insertar datos SQL, ver flujo
 
@@ -311,17 +338,20 @@ setup-testing.bat
 ## 🔗 URLS DE REFERENCIA
 
 ### Durante Development
+
 - Frontend: `http://localhost:3001` (npm run dev)
 - Backend API: `http://localhost:8080`
 - API Status: `http://localhost:8080/api/status`
 - Credenciales: `admin:admin`
 
 ### Con Docker (deploy.sh)
+
 - Dashboard: `http://localhost:8080`
 - MQTT: `localhost:1883` (interno) o `mqtt.vmsfish.com:8883` (nube)
 - MongoDB: `mongodb://localhost:27017`
 
 ### MQTT Monitoring
+
 ```bash
 mosquitto_sub -h mqtt.vmsfish.com -p 8883 \
   -t "feeding/mowi/+/" \
@@ -334,14 +364,14 @@ mosquitto_sub -h mqtt.vmsfish.com -p 8883 \
 
 ## 🆘 TROUBLESHOOTING RÁPIDO
 
-| Problema | Solución |
-|----------|----------|
-| Docker no encontrado | Instalar Docker Desktop (Windows) o docker.io (Linux) |
-| Puerto 8080 en uso | Editar docker-compose.yml: "8081:8080" |
-| Build frontend falla | `cd frontend && npm install && npm run build` |
-| MQTT no conecta | Verificar .env y config.yaml tienen credenciales correctas |
-| SQL no conecta | Verificar IP/puerto/credenciales en .env |
-| Permisos en Linux | `chmod +x deploy.sh setup-testing.sh` |
+| Problema             | Solución                                                   |
+| -------------------- | ---------------------------------------------------------- |
+| Docker no encontrado | Instalar Docker Desktop (Windows) o docker.io (Linux)      |
+| Puerto 8080 en uso   | Editar docker-compose.yml: "8081:8080"                     |
+| Build frontend falla | `cd frontend && npm install && npm run build`              |
+| MQTT no conecta      | Verificar .env y config.yaml tienen credenciales correctas |
+| SQL no conecta       | Verificar IP/puerto/credenciales en .env                   |
+| Permisos en Linux    | `chmod +x deploy.sh setup-testing.sh`                      |
 
 ---
 
@@ -419,15 +449,15 @@ f4cd485 docs: Add CONNECTION_STATUS_FIX.md explaining the status reporting fix
 
 ## 📞 RECURSOS CLAVE
 
-| Recurso | Link | Nota |
-|---------|------|------|
-| Código fuente | `f:\vscode\omnipoll` | Git repo local |
-| Documentación | `*.md` en raíz | 15+ archivos |
-| Scripts | `deploy.sh`, `setup-testing.sh` | Automatizados |
-| Backend | `backend/` | Go 1.21+ |
-| Frontend | `frontend/` | React + Vite |
-| Config | `backend/data/config.yaml` | 🔴 EDITAR |
-| Env vars | `.env` | 🔴 EDITAR |
+| Recurso       | Link                            | Nota           |
+| ------------- | ------------------------------- | -------------- |
+| Código fuente | `f:\vscode\omnipoll`            | Git repo local |
+| Documentación | `*.md` en raíz                  | 15+ archivos   |
+| Scripts       | `deploy.sh`, `setup-testing.sh` | Automatizados  |
+| Backend       | `backend/`                      | Go 1.21+       |
+| Frontend      | `frontend/`                     | React + Vite   |
+| Config        | `backend/data/config.yaml`      | 🔴 EDITAR      |
+| Env vars      | `.env`                          | 🔴 EDITAR      |
 
 ---
 
@@ -459,15 +489,18 @@ REQUIERE ANTES DE GO-LIVE:
 ## 🎓 LECTURA RECOMENDADA POR PRIORIDAD
 
 ### MAÑANA (Alta Prioridad)
+
 1. **GO_LIVE.md** - 5 minutos
 2. **SCRIPTS_GUIDE.md** - 5 minutos
 3. Ejecutar `deploy.sh/bat` - 5 minutos
 
 ### MAÑANA (Media Prioridad)
+
 4. **JSON_FLOW.md** - 10 minutos (entender transformaciones)
 5. **TESTING_JSON.md** - 15 minutos (cómo testear)
 
 ### MAÑANA (Baja Prioridad)
+
 6. **PRODUCTION.md** - 20 minutos (si vas a producción)
 7. **ARCHITECTURE.md** - 15 minutos (si necesitas detalles)
 
@@ -476,6 +509,7 @@ REQUIERE ANTES DE GO-LIVE:
 ## 🚀 COMANDO PARA MAÑANA (COPIA Y PEGA)
 
 **Windows (PowerShell):**
+
 ```powershell
 cd f:\vscode\omnipoll
 git pull
@@ -483,6 +517,7 @@ git pull
 ```
 
 **Linux/Mac (Terminal):**
+
 ```bash
 cd ~/omnipoll
 git pull
@@ -493,13 +528,14 @@ git pull
 
 **GENERADO:** 2026-01-12 23:50  
 **VÁLIDO HASTA:** 2026-01-13 23:59  
-**ACTUALIZAR ANTES DE:** Hacer cambios en código o config  
+**ACTUALIZAR ANTES DE:** Hacer cambios en código o config
 
 ---
 
 ## 📌 PRÓXIMO PASO
 
 **Mañana por la mañana:**
+
 1. Abrir este archivo
 2. Leer hasta "CHECKLIST DE TAREAS"
 3. Ejecutar comando en sección "COMANDO PARA MAÑANA"

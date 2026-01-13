@@ -26,12 +26,14 @@ deploy.bat              # Windows
 ### Manual Setup
 
 **Requirements:**
-- Go 1.21+ 
+
+- Go 1.21+
 - Node.js 18+
 - Docker & Docker Compose
 - SQL Server 2019+ (remote or local)
 
 **Backend:**
+
 ```bash
 cd backend
 go mod download
@@ -39,6 +41,7 @@ OMNIPOLL_CONFIG_PATH=data/config.yaml go run ./cmd/omnipoll
 ```
 
 **Frontend:**
+
 ```bash
 cd frontend
 npm install
@@ -78,6 +81,7 @@ npm run build        # Production build
 ```
 
 **Data Flow:**
+
 ```
 SQL Server → Fetch New Records
     ↓
@@ -199,6 +203,7 @@ omnipoll/
 ## 🚀 Deployment Options
 
 ### Option A: Docker (Recommended)
+
 **⏱️ Time:** 5 minutes | **Complexity:** Low | **Recommended For:** Development & testing
 
 ```bash
@@ -206,7 +211,7 @@ omnipoll/
 ```
 
 - ✅ Auto-detects Docker/Docker Compose
-- ✅ Builds frontend automatically  
+- ✅ Builds frontend automatically
 - ✅ Creates config from template
 - ✅ Starts all services
 - ✅ Shows live logs
@@ -214,6 +219,7 @@ omnipoll/
 **Result:** Full stack at `http://localhost:8080`
 
 ### Option B: Linux Production Server
+
 **⏱️ Time:** 2-3 hours | **Complexity:** Medium | **Recommended For:** Production
 
 ```bash
@@ -229,6 +235,7 @@ chmod +x deploy.sh
 [See PRODUCTION.md for detailed steps]
 
 ### Option C: Manual Setup
+
 **⏱️ Time:** 1-2 hours | **Complexity:** High | **For:** Advanced users
 
 [See DEPLOY.md for detailed steps]
@@ -238,15 +245,18 @@ chmod +x deploy.sh
 ## 📊 API Endpoints
 
 ### Authentication
+
 HTTP Basic Auth: `admin:admin` (change in production!)
 
 ### Status
+
 ```bash
 GET /api/status
 # Returns connection states for SQL Server, MQTT, MongoDB
 ```
 
 **Response:**
+
 ```json
 {
   "sqlServer": {
@@ -265,12 +275,14 @@ GET /api/status
 ```
 
 ### Configuration
+
 ```bash
 GET  /api/config           # Get current config
 POST /api/config           # Update config
 ```
 
 ### Events
+
 ```bash
 GET  /api/events           # List events
 GET  /api/events/:id       # Get event
@@ -280,6 +292,7 @@ DELETE /api/events/:id     # Delete event
 ```
 
 ### Logs
+
 ```bash
 GET  /api/logs             # Get system logs
 GET  /api/logs/:id         # Get log entry
@@ -317,7 +330,7 @@ sqlServer:
   port: 1433
   database: FTFeeding
   user: sa
-  password: "password"
+  password: 'password'
 
 mqtt:
   broker: mqtt.vmsfish.com
@@ -342,7 +355,7 @@ admin:
   host: 0.0.0.0
   port: 8080
   username: admin
-  password: "admin123"
+  password: 'admin123'
 ```
 
 [See backend/configs/config.example.yaml for all options]
@@ -352,6 +365,7 @@ admin:
 ## 🧪 Testing
 
 ### Test JSON Publishing
+
 ```bash
 # Insert test data
 sqlcmd -S localhost -U sa -P password -d FTFeeding -Q "
@@ -371,23 +385,24 @@ mosquitto_sub -h mqtt.vmsfish.com -p 8883 \
 
 ## 📖 Documentation Index
 
-| Document | Purpose | Read Time |
-|----------|---------|-----------|
-| [MORNING_BRIEF.md](MORNING_BRIEF.md) | **Context for tomorrow** | 5 min |
-| [GO_LIVE.md](GO_LIVE.md) | Deployment checklist | 5 min |
-| [PRODUCTION.md](PRODUCTION.md) | Detailed prod setup | 20 min |
-| [JSON_FLOW.md](JSON_FLOW.md) | Data transformation | 10 min |
-| [JSON_EXAMPLES.md](JSON_EXAMPLES.md) | Real payload examples | 5 min |
-| [TESTING_JSON.md](TESTING_JSON.md) | How to test | 15 min |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | System design | 15 min |
-| [SCRIPTS_GUIDE.md](SCRIPTS_GUIDE.md) | Script reference | 10 min |
-| [CRUD_IMPLEMENTATION.md](CRUD_IMPLEMENTATION.md) | API reference | 10 min |
+| Document                                         | Purpose                  | Read Time |
+| ------------------------------------------------ | ------------------------ | --------- |
+| [MORNING_BRIEF.md](MORNING_BRIEF.md)             | **Context for tomorrow** | 5 min     |
+| [GO_LIVE.md](GO_LIVE.md)                         | Deployment checklist     | 5 min     |
+| [PRODUCTION.md](PRODUCTION.md)                   | Detailed prod setup      | 20 min    |
+| [JSON_FLOW.md](JSON_FLOW.md)                     | Data transformation      | 10 min    |
+| [JSON_EXAMPLES.md](JSON_EXAMPLES.md)             | Real payload examples    | 5 min     |
+| [TESTING_JSON.md](TESTING_JSON.md)               | How to test              | 15 min    |
+| [ARCHITECTURE.md](ARCHITECTURE.md)               | System design            | 15 min    |
+| [SCRIPTS_GUIDE.md](SCRIPTS_GUIDE.md)             | Script reference         | 10 min    |
+| [CRUD_IMPLEMENTATION.md](CRUD_IMPLEMENTATION.md) | API reference            | 10 min    |
 
 ---
 
 ## 🛠️ Development
 
 ### Backend Development
+
 ```bash
 cd backend
 
@@ -408,6 +423,7 @@ go test ./...
 ```
 
 ### Frontend Development
+
 ```bash
 cd frontend
 
@@ -428,35 +444,38 @@ npm run type-check
 
 ## 📦 Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Backend** | Go | 1.21+ |
-| **Frontend** | React | 18.2 |
-| **Build Tool** | Vite | 5.x |
-| **Styling** | Tailwind CSS | 3.x |
-| **SQL** | MSSQL Driver | Latest |
-| **MQTT** | Paho Go | Latest |
-| **NoSQL** | MongoDB Driver | Latest |
-| **HTTP** | net/http | Built-in |
-| **Encryption** | crypto/aes | Built-in |
-| **Container** | Docker | 20.10+ |
-| **Orchestration** | Docker Compose | 2.x |
+| Layer             | Technology     | Version  |
+| ----------------- | -------------- | -------- |
+| **Backend**       | Go             | 1.21+    |
+| **Frontend**      | React          | 18.2     |
+| **Build Tool**    | Vite           | 5.x      |
+| **Styling**       | Tailwind CSS   | 3.x      |
+| **SQL**           | MSSQL Driver   | Latest   |
+| **MQTT**          | Paho Go        | Latest   |
+| **NoSQL**         | MongoDB Driver | Latest   |
+| **HTTP**          | net/http       | Built-in |
+| **Encryption**    | crypto/aes     | Built-in |
+| **Container**     | Docker         | 20.10+   |
+| **Orchestration** | Docker Compose | 2.x      |
 
 ---
 
 ## 🔐 Security
 
 ### Encryption
+
 - Credentials encrypted with AES-256-GCM
 - Master key in environment variable
 - No secrets in git
 
 ### Authentication
+
 - HTTP Basic Auth
 - Change default credentials in production
 - Supports MQTT TLS 1.2+
 
 ### Best Practices
+
 - ✅ Config stored in YAML (not checked in)
 - ✅ Secrets in environment variables
 - ✅ Master key rotatable via OMNIPOLL_MASTER_KEY
@@ -467,15 +486,15 @@ npm run type-check
 
 ## 🆘 Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Docker not found | Install Docker Desktop (Windows) or docker.io (Linux) |
-| Port 8080 in use | Edit docker-compose.yml: `"8081:8080"` |
-| Frontend build fails | `cd frontend && npm install && npm run build` |
-| MQTT won't connect | Check credentials in .env and config.yaml |
-| SQL Server won't connect | Verify host/port/credentials, check firewall |
-| Status shows disconnected | Check logs: `docker-compose logs omnipoll` |
-| Permission denied (Linux) | `chmod +x deploy.sh setup-testing.sh` |
+| Issue                     | Solution                                              |
+| ------------------------- | ----------------------------------------------------- |
+| Docker not found          | Install Docker Desktop (Windows) or docker.io (Linux) |
+| Port 8080 in use          | Edit docker-compose.yml: `"8081:8080"`                |
+| Frontend build fails      | `cd frontend && npm install && npm run build`         |
+| MQTT won't connect        | Check credentials in .env and config.yaml             |
+| SQL Server won't connect  | Verify host/port/credentials, check firewall          |
+| Status shows disconnected | Check logs: `docker-compose logs omnipoll`            |
+| Permission denied (Linux) | `chmod +x deploy.sh setup-testing.sh`                 |
 
 [See STATUS.md for known issues and limitations]
 
@@ -508,14 +527,14 @@ npm run type-check
 
 ## 📈 Performance & Limits
 
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Poll Interval | 5000 ms | Configurable in config.yaml |
-| Batch Size | 100 records | Per poll cycle |
-| MQTT QoS | 1 | At least once delivery |
-| Max JSON Size | ~1 MB | Per event |
-| MongoDB Storage | Unlimited | Growth depends on record count |
-| SQL Query Timeout | 30 sec | Configurable |
+| Metric            | Value       | Notes                          |
+| ----------------- | ----------- | ------------------------------ |
+| Poll Interval     | 5000 ms     | Configurable in config.yaml    |
+| Batch Size        | 100 records | Per poll cycle                 |
+| MQTT QoS          | 1           | At least once delivery         |
+| Max JSON Size     | ~1 MB       | Per event                      |
+| MongoDB Storage   | Unlimited   | Growth depends on record count |
+| SQL Query Timeout | 30 sec      | Configurable                   |
 
 ---
 
@@ -534,6 +553,7 @@ This is a private project. Contact team lead for contribution guidelines.
 ## 📅 Changelog
 
 ### v1.0.0 (2025-01-12)
+
 - ✅ Full CRUD implementation
 - ✅ Real-time connection status
 - ✅ Docker deployment automation

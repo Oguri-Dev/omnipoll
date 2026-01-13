@@ -5,6 +5,7 @@
 ### `deploy.sh` (Linux/Mac) o `deploy.bat` (Windows)
 
 **¿Qué hace?**
+
 1. ✅ Verifica que Docker está instalado
 2. ✅ Crea archivo `.env` si no existe
 3. ✅ Build frontend automáticamente (npm install + npm run build)
@@ -33,6 +34,7 @@ deploy.bat
 ### `setup-testing.sh` (Linux/Mac) o `setup-testing.bat` (Windows)
 
 **¿Qué hace?**
+
 1. ✅ Verifica Docker
 2. ✅ Levanta MongoDB + Mosquitto
 3. ✅ Espera a que servicios estén listos
@@ -49,6 +51,7 @@ setup-testing.bat
 ```
 
 **Para qué sirve?**
+
 - Testing local sin build de frontend
 - Verificar backend conecta a servicios
 - Insertar datos SQL y ver flujo MQTT
@@ -60,6 +63,7 @@ setup-testing.bat
 ### `backend/scripts/build.sh` (Linux/Mac)
 
 **¿Qué hace?**
+
 1. ✅ Compila backend con Go
 2. ✅ Genera binario ejecutable
 
@@ -74,19 +78,20 @@ cd backend/scripts
 
 ## 📊 Comparativa de Scripts
 
-| Script | Sistema | Tiempo | Para Qué | Comando |
-|--------|---------|--------|----------|---------|
-| **deploy.sh** | Linux/Mac | 5 min | Deploy completo | `./deploy.sh` |
-| **deploy.bat** | Windows | 5 min | Deploy completo | `deploy.bat` |
-| **setup-testing.sh** | Linux/Mac | 2 min | Testing local | `./setup-testing.sh` |
-| **setup-testing.bat** | Windows | 2 min | Testing local | `setup-testing.bat` |
-| **build.sh** | Linux/Mac | 30 seg | Build backend | `backend/scripts/build.sh` |
+| Script                | Sistema   | Tiempo | Para Qué        | Comando                    |
+| --------------------- | --------- | ------ | --------------- | -------------------------- |
+| **deploy.sh**         | Linux/Mac | 5 min  | Deploy completo | `./deploy.sh`              |
+| **deploy.bat**        | Windows   | 5 min  | Deploy completo | `deploy.bat`               |
+| **setup-testing.sh**  | Linux/Mac | 2 min  | Testing local   | `./setup-testing.sh`       |
+| **setup-testing.bat** | Windows   | 2 min  | Testing local   | `setup-testing.bat`        |
+| **build.sh**          | Linux/Mac | 30 seg | Build backend   | `backend/scripts/build.sh` |
 
 ---
 
 ## 🎯 Flujo Recomendado
 
 ### Día 1: Validación Rápida
+
 ```
 1. Ejecutar setup-testing.sh/bat
 2. Insertar datos SQL
@@ -94,6 +99,7 @@ cd backend/scripts
 ```
 
 ### Día 2: Deploy Completo
+
 ```
 1. Ejecutar deploy.sh/bat
 2. Verificar servicios corriendo
@@ -101,6 +107,7 @@ cd backend/scripts
 ```
 
 ### Día 3: Producción
+
 ```
 1. Transferir a servidor Linux
 2. Ejecutar deploy.sh en servidor
@@ -115,6 +122,7 @@ cd backend/scripts
 ### Editar antes de ejecutar `deploy.sh`:
 
 **`.env`** (Credenciales de SQL Server)
+
 ```bash
 OMNIPOLL_MASTER_KEY=tu-clave-de-32-caracteres
 SQL_SERVER_HOST=ip-de-tu-sql-server
@@ -123,6 +131,7 @@ SQL_SERVER_PASSWORD=tu-password
 ```
 
 **`backend/data/config.yaml`** (Conexiones)
+
 ```yaml
 sqlServer:
   host: tu-servidor-sql
@@ -130,7 +139,7 @@ sqlServer:
   password: tu-password
 
 mqtt:
-  broker: mosquitto  # o tu-servidor-mqtt
+  broker: mosquitto # o tu-servidor-mqtt
   port: 1883
 
 admin:
@@ -142,6 +151,7 @@ admin:
 ## 🆘 Troubleshooting Scripts
 
 ### "Docker no encontrado"
+
 ```bash
 # Instalar Docker
 # Windows: https://www.docker.com/products/docker-desktop
@@ -149,6 +159,7 @@ admin:
 ```
 
 ### "Error en build frontend"
+
 ```bash
 # El script intenta instalar npm automáticamente
 # Si falla, instalar Node.js manualmente
@@ -157,6 +168,7 @@ npm --version    # debe ser v8+
 ```
 
 ### "Permisos denegados en Linux"
+
 ```bash
 # Hacer script ejecutable
 chmod +x deploy.sh
@@ -164,6 +176,7 @@ chmod +x setup-testing.sh
 ```
 
 ### "Puerto 8080 ya en uso"
+
 ```bash
 # Cambiar puerto en docker-compose.yml
 # Buscar "8080:8080" y cambiar a "8081:8080"
@@ -174,6 +187,7 @@ chmod +x setup-testing.sh
 ## 📝 Ejemplos de Uso
 
 ### Caso 1: Deploy rápido en Windows
+
 ```
 1. Abrir PowerShell / CMD
 2. cd f:\vscode\omnipoll
@@ -183,6 +197,7 @@ chmod +x setup-testing.sh
 ```
 
 ### Caso 2: Testing local en Linux
+
 ```
 1. cd ~/omnipoll
 2. ./setup-testing.sh
@@ -191,6 +206,7 @@ chmod +x setup-testing.sh
 ```
 
 ### Caso 3: Deploy en servidor Linux
+
 ```
 1. SSH al servidor: ssh usuario@servidor
 2. cd /home/usuario/omnipoll

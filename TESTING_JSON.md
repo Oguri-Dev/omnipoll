@@ -3,12 +3,14 @@
 ## 1. Requisitos Previos
 
 ### ✅ Ya Tienes
+
 - Backend compilado y corriendo en `localhost:8080`
 - Frontend en `http://localhost:3001`
 - MQTT conectado a `mqtt.vmsfish.com:8883`
 - Configuración valida en `config.yaml`
 
 ### ❌ Necesitas Para Testing Completo
+
 - SQL Server con datos (Docker o local)
 - MongoDB para deduplicación (Docker o local)
 
@@ -29,6 +31,7 @@ grep -n "ToNormalizedEvent\|ToNormalizedEvents" internal/akva/mapper.go
 ```
 
 **Resultado esperado:**
+
 ```
 publisher.go:97: func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error
 publisher.go:44: func (p *Publisher) buildDynamicTopic(centerName string) string
@@ -48,6 +51,7 @@ grep -A 12 "type MQTTMessage struct" internal/mqtt/publisher.go
 ```
 
 **Resultado esperado:**
+
 ```go
 type MQTTMessage struct {
 	TimeStampAkva       string  `json:"TimeStampAkva"`
@@ -80,6 +84,7 @@ docker ps
 ```
 
 **Esperado:**
+
 ```
 CONTAINER ID   IMAGE                      STATUS
 abc123...      mcr.microsoft.com/mssql... Up 2 minutes
@@ -111,6 +116,7 @@ sqlcmd -S localhost,1433 -U sa -P AdminPassword123!
 ```
 
 **Ejecutar script:**
+
 ```sql
 USE FTFeeding
 
@@ -119,20 +125,20 @@ SELECT TOP 5 * FROM [dbo].[DetalleAlimentacion]
 
 -- Insertar datos de prueba
 INSERT INTO [dbo].[DetalleAlimentacion] (
-    ID, Name, UnitName, FechaHora, AmountGrams, FishCount, PesoProm, 
-    Biomasa, FeedName, SiloName, Dia, Inicio, Fin, Dif, 
+    ID, Name, UnitName, FechaHora, AmountGrams, FishCount, PesoProm,
+    Biomasa, FeedName, SiloName, Dia, Inicio, Fin, Dif,
     PelletFishMin, PelletPK, GramsPerSec, KgTonMin, Marca, DoserName
 ) VALUES (
-    'TEST001', 
-    'Mowi-Test-Farm', 
-    'Jaula-001', 
-    GETUTCDATE(), 
-    125.5, 
-    1000, 
-    125.4, 
-    125400, 
-    'Premium 4.5mm', 
-    'Silo-A', 
+    'TEST001',
+    'Mowi-Test-Farm',
+    'Jaula-001',
+    GETUTCDATE(),
+    125.5,
+    1000,
+    125.4,
+    125400,
+    'Premium 4.5mm',
+    'Silo-A',
     CAST(GETUTCDATE() AS DATE),
     '08:00',
     '09:00',
@@ -180,11 +186,13 @@ mosquitto_sub -h mqtt.vmsfish.com -p 8883 \
 ```
 
 **Esperado:**
+
 ```
 feeding/mowi/mowitestfarm/ {"TimeStampAkva":"2026-01-12T14:30:10Z","TimeStampIngresado":"2026-01-12T14:30:10.234Z","Jaula":"001","Centro":"Mowi-Test-Farm","Gramos":125.5,"Biomasa":125400,"Peces":1000,"PesoPromedio":125.4,"Alimento":"Premium 4.5mm","Silo":"Silo-A"}
 ```
 
 **Opción B: Con MQTT Explorer**
+
 1. Abrir MQTT Explorer
 2. Conectar a mqtt.vmsfish.com:8883
 3. Usuario: test, Contraseña: test2025
@@ -198,14 +206,17 @@ feeding/mowi/mowitestfarm/ {"TimeStampAkva":"2026-01-12T14:30:10Z","TimeStampIng
 ### Test 4.1: Verificar Topic dinámico
 
 **Entrada SQL:**
+
 - Centro: "Mowi-Test-Farm"
 
 **Topic esperado:**
+
 ```
 feeding/mowi/mowitestfarm/
 ```
 
 **Verificación:**
+
 ```bash
 # En el JSON que recibes por MQTT, busca el topic:
 feeding/mowi/mowitestfarm/  # ✅ Correcto
@@ -219,6 +230,7 @@ feeding/mowi/mowitestfarm/  # ✅ Correcto
 ### Test 4.2: Verificar mapeo de campos
 
 **Entrada SQL:**
+
 ```
 Name: "Mowi-Test-Farm"
 UnitName: "Jaula-001"
@@ -231,20 +243,22 @@ SiloName: "Silo-A"
 ```
 
 **Salida JSON MQTT:**
+
 ```json
 {
-  "Centro": "Mowi-Test-Farm",     // ← Name
-  "Jaula": "001",                 // ← UnitName (limpiado - solo números)
-  "Gramos": 125.5,                // ← AmountGrams
-  "Peces": 1000,                  // ← FishCount
-  "PesoPromedio": 125.4,          // ← PesoProm
-  "Biomasa": 125400,              // ← Biomasa
-  "Alimento": "Premium 4.5mm",    // ← FeedName
-  "Silo": "Silo-A"                // ← SiloName
+  "Centro": "Mowi-Test-Farm", // ← Name
+  "Jaula": "001", // ← UnitName (limpiado - solo números)
+  "Gramos": 125.5, // ← AmountGrams
+  "Peces": 1000, // ← FishCount
+  "PesoPromedio": 125.4, // ← PesoProm
+  "Biomasa": 125400, // ← Biomasa
+  "Alimento": "Premium 4.5mm", // ← FeedName
+  "Silo": "Silo-A" // ← SiloName
 }
 ```
 
 **Verificación:**
+
 ```bash
 # Buscar en el JSON publicado:
 jq . <<< '{"Centro":"Mowi-Test-Farm","Jaula":"001",...}'
@@ -264,28 +278,33 @@ jq . <<< '{"Centro":"Mowi-Test-Farm","Jaula":"001",...}'
 ### Test 5.1: Mismo evento dos veces
 
 **Inserción 1:**
+
 ```sql
-INSERT INTO [dbo].[DetalleAlimentacion] (...) 
+INSERT INTO [dbo].[DetalleAlimentacion] (...)
 VALUES ('TEST002', 'Mowi-Dedup-Test', 'Jaula-002', GETUTCDATE(), 100, 800, 125, 100000, 'Standard', 'Silo-B', ...)
 ```
 
 **Resultado esperado:**
+
 ```
 ✅ Se publica a MQTT
 ```
 
 **Inserción 2 (idéntico):**
+
 ```sql
-INSERT INTO [dbo].[DetalleAlimentacion] (...) 
+INSERT INTO [dbo].[DetalleAlimentacion] (...)
 VALUES ('TEST002', 'Mowi-Dedup-Test', 'Jaula-002', GETUTCDATE(), 100, 800, 125, 100000, 'Standard', 'Silo-B', ...)
 ```
 
 **Resultado esperado:**
+
 ```
 ❌ NO se publica (ya existe en MongoDB con los mismos valores)
 ```
 
 **Verificación:**
+
 ```bash
 # En MQTT Explorer no deberías ver dos eventos idénticos
 # Solo uno en topic: feeding/mowi/mowideduptest/
@@ -298,26 +317,30 @@ VALUES ('TEST002', 'Mowi-Dedup-Test', 'Jaula-002', GETUTCDATE(), 100, 800, 125, 
 ### Test 5.2: Mismo evento con cambio de Biomasa
 
 **Inserción 1:**
+
 ```sql
-INSERT INTO [dbo].[DetalleAlimentacion] (..., Biomasa: 125400, ...) 
+INSERT INTO [dbo].[DetalleAlimentacion] (..., Biomasa: 125400, ...)
 VALUES ('TEST003', ...)
 ```
 
 **Inserción 2 (con Biomasa diferente):**
+
 ```sql
-INSERT INTO [dbo].[DetalleAlimentacion] (..., Biomasa: 125200, ...) 
+INSERT INTO [dbo].[DetalleAlimentacion] (..., Biomasa: 125200, ...)
 VALUES ('TEST003', ...)  -- Misma ID, Biomasa bajó
 ```
 
 **Resultado esperado:**
+
 ```
 ✅ Se publica segunda vez (cambió Biomasa)
 ```
 
 **Verificación:**
+
 ```bash
 # En MQTT Explorer deberías ver 2 mensajes en el mismo topic:
-feeding/mowi/xxx/ 
+feeding/mowi/xxx/
   - {"Biomasa": 125400, ...}  # Primero
   - {"Biomasa": 125200, ...}  # Segundo (distinto)
 ```
@@ -329,6 +352,7 @@ feeding/mowi/xxx/
 ### Test 6.1: JSON con caracteres especiales
 
 **SQL Insert:**
+
 ```sql
 INSERT INTO [dbo].[DetalleAlimentacion] (
     ..., Name: 'Mowi™ Farm © 2024', FeedName: 'Premium "Premium Plus" 4.5mm', ...
@@ -336,11 +360,13 @@ INSERT INTO [dbo].[DetalleAlimentacion] (
 ```
 
 **Resultado esperado:**
+
 ```
 ✅ Se publica sin errores
 ```
 
 **Verificación:**
+
 ```bash
 # El JSON debe ser válido y escapado correctamente:
 {
@@ -353,6 +379,7 @@ INSERT INTO [dbo].[DetalleAlimentacion] (
 ### Test 6.2: Valores NULL
 
 **SQL Insert (con NULLs):**
+
 ```sql
 INSERT INTO [dbo].[DetalleAlimentacion] (
     ..., FeedName: NULL, SiloName: NULL, ...
@@ -360,11 +387,13 @@ INSERT INTO [dbo].[DetalleAlimentacion] (
 ```
 
 **Resultado esperado:**
+
 ```
 ✅ Se publica (los campos NULL se mapean a strings vacíos)
 ```
 
 **Verificación:**
+
 ```bash
 # En el JSON deberían aparecer como strings vacíos:
 {
@@ -392,11 +421,13 @@ END
 ```
 
 **Resultado esperado:**
+
 ```
 ✅ Se publican 100 eventos en < 5 segundos
 ```
 
 **Verificación:**
+
 ```bash
 # Logs del backend:
 2026/01/12 15:00:00 poller.go:82: Fetched 100 new records from Akva
