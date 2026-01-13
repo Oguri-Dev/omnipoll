@@ -141,74 +141,27 @@ func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error {
 	total := len(evts)
 	cfg := p.client.GetConfig()
 	
-	// Log broker info once at the start
-	log.Printf("[MQTT] Starting batch publish to broker: %s:%d (TLS: %v, QoS: %d)", 
-		cfg.Broker, cfg.Port, cfg.UseTLS, cfg.QoS)
-	log.Printf("[MQTT] Total events to publish: %d", total)
-	
-	// Log first message payload for debugging
-	if total > 0 {
-		firstEvent := evts[0]
-		firstTopic := p.buildDynamicTopic(firstEvent.Name)
-		
-		// Build first message
-		firstMsg := MQTTMessage{
-			ID:                 firstEvent.ID,
-			Centro:             firstEvent.Name,
-			Jaula:              p.cleanJaula(firstEvent.UnitName),
-			TimeStampAkva:      firstEvent.FechaHora,
-			Dia:                firstEvent.Dia,
-			Inicio:             firstEvent.Inicio,
-			Fin:                firstEvent.Fin,
-			Dif:                firstEvent.Dif,
-			Gramos:             firstEvent.AmountGrams,
-			PelletFishMin:      firstEvent.PelletFishMin,
-			Peces:              firstEvent.FishCount,
-			PesoPromedio:       firstEvent.PesoProm,
-			Biomasa:            firstEvent.Biomasa,
-			PelletPK:           firstEvent.PelletPK,
-			Alimento:           firstEvent.FeedName,
-			Silo:               firstEvent.SiloName,
-			Dosificador:        firstEvent.DoserName,
-			GramsPorSegundo:    firstEvent.GramsPerSec,
-			KgTonMin:           firstEvent.KgTonMin,
-			Marca:              firstEvent.Marca,
-			TimeStampIngresado: firstEvent.IngestedAt.Format(time.RFC3339),
-		}
-		
-		firstPayload, _ := json.Marshal(firstMsg)
-		log.Printf("[MQTT] First message - Topic: %s", firstTopic)
-		log.Printf("[MQTT] First message - Payload: %s", string(firstPayload))
-	}
+	log.Printf("[MQTT] Publishing %d events to %s:%d (QoS: %d)", total, cfg.Broker, cfg.Port, cfg.QoS)
 	
 	for i, event := range evts {
-		// Build topic for logging
-		topic := p.buildDynamicTopic(event.Name)
-		
-		// Detailed logging for first 3 events only
-		if i < 3 && i > 0 {
-			log.Printf("[MQTT] Event %d/%d - Topic: %s", i+1, total, topic)
-			log.Printf("[MQTT] Event %d/%d - Data: Centro=%s, Jaula=%s, Gramos=%.2f, Peces=%.0f, Biomasa=%.0f, ID=%s", 
-				i+1, total, event.Name, p.cleanJaula(event.UnitName), event.AmountGrams, event.FishCount, event.Biomasa, event.ID)
-		}
-		
 		if err := p.Publish(event); err != nil {
 			errorCount++
-			// Log first 5 errors in detail
-			if errorCount <= 5 {
-				log.Printf("[MQTT] ERROR event %d/%d (ID: %s, Topic: %s): %v", i+1, total, event.ID, topic, err)
+			// Log first error only
+			if errorCount == 1 {
+				topic := p.buildDynamicTopic(event.Name)
+				log.Printf("[MQTT] First error - Topic: %s, Error: %v", topic, err)
 			}
 		} else {
 			successCount++
 		}
 		
-		// Log progress every 10 events
-		if (i+1)%10 == 0 {
-			log.Printf("[MQTT] Progress: %d/%d events (%d success, %d errors)", i+1, total, successCount, errorCount)
+		// Log progress every 25 events
+		if (i+1)%25 == 0 {
+			log.Printf("[MQTT] Progress: %d/%d (%d ok, %d err)", i+1, total, successCount, errorCount)
 		}
 	}
 	
-	log.Printf("[MQTT] Batch complete: %d/%d events published successfully (%d errors)", successCount, total, errorCount)
+	log.Printf("[MQTT] Complete: %d/%d published successfully", successCount, total)
 	
 	if errorCount > 0 {
 		return fmt.Errorf("published %d/%d events (%d errors)", successCount, len(evts), errorCount)

@@ -50,7 +50,7 @@ func (s *Server) withCORS(next http.Handler) http.Handler {
 	})
 }
 
-// withLogging logs each request
+// withLogging logs each request (excluding frequent API calls)
 func (s *Server) withLogging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -60,7 +60,10 @@ func (s *Server) withLogging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(wrapped, r)
 
-		log.Printf("%s %s %d %v", r.Method, r.URL.Path, wrapped.statusCode, time.Since(start))
+		// Only log non-polling API requests to reduce noise
+		if r.URL.Path != "/api/status" && r.URL.Path != "/api/events" {
+			log.Printf("%s %s %d %v", r.Method, r.URL.Path, wrapped.statusCode, time.Since(start))
+		}
 	})
 }
 
