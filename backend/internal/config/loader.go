@@ -146,6 +146,11 @@ func (m *Manager) saveUnlocked() error {
 	// Create a copy with encrypted passwords
 	cfg := *m.config
 
+	// NOTE: Encryption disabled for development
+	// Passwords are stored in plain text in development
+	// TODO: Enable encryption in production
+	
+	/*
 	var err error
 	if !crypto.IsEncrypted(cfg.SQLServer.Password) && cfg.SQLServer.Password != "" {
 		cfg.SQLServer.Password, err = m.encryptor.Encrypt(cfg.SQLServer.Password)
@@ -165,9 +170,11 @@ func (m *Manager) saveUnlocked() error {
 			return err
 		}
 	}
+	*/
 
 	ext := filepath.Ext(m.path)
 	var data []byte
+	var err error
 
 	switch ext {
 	case ".json":

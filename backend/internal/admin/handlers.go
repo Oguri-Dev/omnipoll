@@ -103,15 +103,31 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 		// Get current config to preserve unmodified fields
 		currentCfg := s.configManager.Get()
 
-		// If password is masked, keep the original
-		if cfg.SQLServer.Password == "********" {
+		// If Admin section is empty, keep the current one (don't let frontend override it)
+		if cfg.Admin.Host == "" && cfg.Admin.Username == "" && cfg.Admin.Port == 0 {
+			cfg.Admin = currentCfg.Admin
+		} else {
+			// Preserve admin password if masked or empty
+			if cfg.Admin.Password == "********" || cfg.Admin.Password == "" {
+				cfg.Admin.Password = currentCfg.Admin.Password
+			}
+			if cfg.Admin.Host == "" {
+				cfg.Admin.Host = currentCfg.Admin.Host
+			}
+			if cfg.Admin.Port == 0 {
+				cfg.Admin.Port = currentCfg.Admin.Port
+			}
+			if cfg.Admin.Username == "" {
+				cfg.Admin.Username = currentCfg.Admin.Username
+			}
+		}
+
+		// If password is masked or empty, keep the original
+		if cfg.SQLServer.Password == "********" || cfg.SQLServer.Password == "" {
 			cfg.SQLServer.Password = currentCfg.SQLServer.Password
 		}
-		if cfg.MQTT.Password == "********" {
+		if cfg.MQTT.Password == "********" || cfg.MQTT.Password == "" {
 			cfg.MQTT.Password = currentCfg.MQTT.Password
-		}
-		if cfg.Admin.Password == "********" {
-			cfg.Admin.Password = currentCfg.Admin.Password
 		}
 
 		// Validate that required fields are not empty
