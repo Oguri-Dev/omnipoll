@@ -109,7 +109,7 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 	}
 
 	token := client.Publish(topic, cfg.QoS, false, payload)
-	if token.WaitTimeout(10 * time.Second) && token.Error() != nil {
+	if token.WaitTimeout(2 * time.Second) && token.Error() != nil {
 		return fmt.Errorf("failed to publish message: %w", token.Error())
 	}
 
@@ -120,18 +120,26 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error {
 	successCount := 0
 	errorCount := 0
+	total := len(evts)
 	
 	for i, event := range evts {
 		if err := p.Publish(event); err != nil {
 			errorCount++
-			// Log error but continue with next event
+			// Log first 5 errors in detail
 			if errorCount <= 5 {
-				log.Printf("MQTT publish error for event %d (ID: %s): %v", i+1, event.ID, err)
+				log.Printf("MQTT publish error for event %d/%d (ID: %s): %v", i+1, total, event.ID, err)
 			}
 		} else {
 			successCount++
 		}
+		
+		// Log progress every 10 events
+		if (i+1)%10 == 0 {
+			log.Printf("MQTT publish progress: %d/%d events (%d success, %d errors)", i+1, total, successCount, errorCount)
+		}
 	}
+	
+	log.Printf("MQTT batch complete: %d/%d events published successfully", successCount, total)
 	
 	if errorCount > 0 {
 		return fmt.Errorf("published %d/%d events (%d errors)", successCount, len(evts), errorCount)
