@@ -30,6 +30,8 @@ func (s *Server) handleEventsGet(w http.ResponseWriter, r *http.Request) {
 	var startDate, endDate *time.Time
 	source := query.Get("source")
 	unitName := query.Get("unitName")
+	centro := query.Get("centro")
+	jaula := query.Get("jaula")
 	sortBy := query.Get("sortBy")
 	sortOrder := -1
 
@@ -77,6 +79,8 @@ func (s *Server) handleEventsGet(w http.ResponseWriter, r *http.Request) {
 		EndDate:   endDate,
 		Source:    source,
 		UnitName:  unitName,
+		Centro:    centro,
+		Jaula:     jaula,
 		SortBy:    sortBy,
 		SortOrder: sortOrder,
 	}

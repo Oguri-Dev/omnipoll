@@ -9,23 +9,23 @@ interface Event {
   FechaHora: string
   UnitName: string
   Payload?: {
-    name?: string          // Centro
-    amountGrams?: number   // Gramos
+    name?: string // Centro
+    amountGrams?: number // Gramos
     pelletFishMin?: number
-    fishCount?: number     // Peces
-    pesoProm?: number      // Peso Promedio
+    fishCount?: number // Peces
+    pesoProm?: number // Peso Promedio
     biomasa?: number
     pelletPK?: number
-    feedName?: string      // Alimento
-    siloName?: string      // Silo
-    doserName?: string     // Dosificador
-    gramsPerSec?: number   // Gramos por segundo
+    feedName?: string // Alimento
+    siloName?: string // Silo
+    doserName?: string // Dosificador
+    gramsPerSec?: number // Gramos por segundo
     kgTonMin?: number
     marca?: number
     dia?: string
     inicio?: string
     fin?: string
-    dif?: number           // Duración en segundos
+    dif?: number // Duración en segundos
   }
   IngestedAt: string
 }
@@ -35,10 +35,8 @@ export default function Events() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
   const [filters, setFilters] = useState({
-    source: '',
-    unitName: '',
-    startDate: '',
-    endDate: '',
+    centro: '',
+    jaula: '',
   })
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showModal, setShowModal] = useState(false)
@@ -100,34 +98,20 @@ export default function Events() {
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 space-y-4">
         <h2 className="font-semibold">Filters</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
             type="text"
-            name="source"
-            placeholder="Source (e.g., Akva)"
-            value={filters.source}
+            name="centro"
+            placeholder="Centro (e.g., Huelden YC 2025)"
+            value={filters.centro}
             onChange={handleFilterChange}
             className="border rounded px-3 py-2"
           />
           <input
             type="text"
-            name="unitName"
-            placeholder="Unit Name"
-            value={filters.unitName}
-            onChange={handleFilterChange}
-            className="border rounded px-3 py-2"
-          />
-          <input
-            type="date"
-            name="startDate"
-            value={filters.startDate}
-            onChange={handleFilterChange}
-            className="border rounded px-3 py-2"
-          />
-          <input
-            type="date"
-            name="endDate"
-            value={filters.endDate}
+            name="jaula"
+            placeholder="Jaula (e.g., 101)"
+            value={filters.jaula}
             onChange={handleFilterChange}
             className="border rounded px-3 py-2"
           />
@@ -175,43 +159,55 @@ export default function Events() {
       {!isLoading && events.length > 0 && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-xs">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Centro</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Jaula</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Fecha/Hora</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Gramos</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Peces</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Biomasa</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Alimento</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Silo</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Duración</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Actions</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Centro</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Jaula</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Fecha/Hora</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Día</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Inicio</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Fin</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Duración</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Gramos</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Pellet/Fish/Min</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Peces</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Peso Prom</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Biomasa</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Pellet PK</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Alimento</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Silo</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Dosificador</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Gramos/Seg</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Kg Ton/Min</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Marca</th>
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {events.map((event: Event) => (
                   <tr key={event._id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm">{event.Payload?.name || '-'}</td>
-                    <td className="px-4 py-3 text-sm">{event.UnitName}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {new Date(event.FechaHora).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {event.Payload?.amountGrams ? event.Payload.amountGrams.toFixed(2) : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {event.Payload?.fishCount ? event.Payload.fishCount.toFixed(0) : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {event.Payload?.biomasa ? event.Payload.biomasa.toFixed(0) : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">{event.Payload?.feedName || '-'}</td>
-                    <td className="px-4 py-3 text-sm">{event.Payload?.siloName || '-'}</td>
-                    <td className="px-4 py-3 text-sm">{event.Payload?.dif ? `${event.Payload.dif}s` : '-'}</td>
-                    <td className="px-6 py-3 text-sm">
-                      <div className="flex gap-2">
+                    <td className="px-2 py-2 text-xs">{event.Payload?.name || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.UnitName}</td>
+                    <td className="px-2 py-2 text-xs">{new Date(event.FechaHora).toLocaleString()}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.dia || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.inicio || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.fin || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.dif ? `${event.Payload.dif}s` : '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.amountGrams?.toFixed(2) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.pelletFishMin?.toFixed(4) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.fishCount?.toFixed(0) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.pesoProm?.toFixed(2) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.biomasa?.toFixed(0) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.pelletPK?.toFixed(3) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.feedName || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.siloName || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.doserName || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.gramsPerSec?.toFixed(2) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.kgTonMin?.toFixed(6) || '-'}</td>
+                    <td className="px-2 py-2 text-xs">{event.Payload?.marca || 0}</td>
+                    <td className="px-2 py-2 text-xs\">
+                      <div className="flex gap-1">
                         <button
                           onClick={() => handleViewDetails(event)}
                           className="text-blue-600 hover:text-blue-800 p-1"
@@ -309,11 +305,15 @@ export default function Events() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="text-sm">
                     <p className="text-gray-600">Gramos</p>
-                    <p className="font-mono">{selectedEvent.Payload?.amountGrams?.toFixed(2) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.amountGrams?.toFixed(2) || '-'}
+                    </p>
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Peces</p>
-                    <p className="font-mono">{selectedEvent.Payload?.fishCount?.toFixed(0) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.fishCount?.toFixed(0) || '-'}
+                    </p>
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Biomasa (g)</p>
@@ -321,23 +321,33 @@ export default function Events() {
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Peso Promedio (g)</p>
-                    <p className="font-mono">{selectedEvent.Payload?.pesoProm?.toFixed(2) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.pesoProm?.toFixed(2) || '-'}
+                    </p>
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Pellet/Fish/Min</p>
-                    <p className="font-mono">{selectedEvent.Payload?.pelletFishMin?.toFixed(4) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.pelletFishMin?.toFixed(4) || '-'}
+                    </p>
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Pellet PK</p>
-                    <p className="font-mono">{selectedEvent.Payload?.pelletPK?.toFixed(3) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.pelletPK?.toFixed(3) || '-'}
+                    </p>
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Gramos/Seg</p>
-                    <p className="font-mono">{selectedEvent.Payload?.gramsPerSec?.toFixed(2) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.gramsPerSec?.toFixed(2) || '-'}
+                    </p>
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Kg Ton/Min</p>
-                    <p className="font-mono">{selectedEvent.Payload?.kgTonMin?.toFixed(6) || '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.kgTonMin?.toFixed(6) || '-'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -377,7 +387,9 @@ export default function Events() {
                   </div>
                   <div className="text-sm">
                     <p className="text-gray-600">Duración</p>
-                    <p className="font-mono">{selectedEvent.Payload?.dif ? `${selectedEvent.Payload.dif}s` : '-'}</p>
+                    <p className="font-mono">
+                      {selectedEvent.Payload?.dif ? `${selectedEvent.Payload.dif}s` : '-'}
+                    </p>
                   </div>
                 </div>
               </div>

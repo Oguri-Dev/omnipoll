@@ -181,8 +181,10 @@ type QueryOptions struct {
 	PageSize  int                  `json:"pageSize"`  // Items per page
 	StartDate *time.Time           `json:"startDate"` // Filter by date range
 	EndDate   *time.Time           `json:"endDate"`
-	Source    string               `json:"source"`    // Filter by source (Akva, etc)
-	UnitName  string               `json:"unitName"`  // Filter by unit name
+	Source    string               `json:"source"`    // Filter by source (Akva, etc) - deprecated, use Centro
+	UnitName  string               `json:"unitName"`  // Filter by unit name - deprecated, use Jaula
+	Centro    string               `json:"centro"`    // Filter by centro name
+	Jaula     string               `json:"jaula"`     // Filter by jaula number
 	SortBy    string               `json:"sortBy"`    // "fechaHora" or "ingestedAt"
 	SortOrder int                  `json:"sortOrder"` // 1 for ascending, -1 for descending
 }
@@ -216,8 +218,18 @@ func (r *Repository) QueryEvents(ctx context.Context, opts QueryOptions) (*Query
 		filter["source"] = opts.Source
 	}
 
+	// Filter by Centro (payload.name)
+	if opts.Centro != "" {
+		filter["payload.name"] = bson.M{"$regex": opts.Centro, "$options": "i"} // Case-insensitive
+	}
+
 	if opts.UnitName != "" {
 		filter["unitName"] = bson.M{"$regex": opts.UnitName, "$options": "i"} // Case-insensitive
+	}
+
+	// Filter by Jaula (unitName)
+	if opts.Jaula != "" {
+		filter["unitName"] = bson.M{"$regex": opts.Jaula, "$options": "i"} // Case-insensitive
 	}
 
 	// Count total documents
