@@ -9,23 +9,23 @@ interface Event {
   FechaHora: string
   UnitName: string
   Payload?: {
-    name?: string
-    amountGrams?: number
+    name?: string          // Centro
+    amountGrams?: number   // Gramos
     pelletFishMin?: number
-    fishCount?: number
-    pesoProm?: number
+    fishCount?: number     // Peces
+    pesoProm?: number      // Peso Promedio
     biomasa?: number
     pelletPK?: number
-    feedName?: string
-    siloName?: string
-    doserName?: string
-    gramsPerSec?: number
+    feedName?: string      // Alimento
+    siloName?: string      // Silo
+    doserName?: string     // Dosificador
+    gramsPerSec?: number   // Gramos por segundo
     kgTonMin?: number
     marca?: number
     dia?: string
     inicio?: string
     fin?: string
-    dif?: number
+    dif?: number           // Duración en segundos
   }
   IngestedAt: string
 }
@@ -178,28 +178,38 @@ export default function Events() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Source</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Unit</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">
-                    Fecha/Hora
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Biomasa</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Feed</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Centro</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Jaula</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Fecha/Hora</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Gramos</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Peces</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Biomasa</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Alimento</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Silo</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Duración</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {events.map((event: Event) => (
                   <tr key={event._id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm">{event.Source}</td>
-                    <td className="px-6 py-3 text-sm">{event.UnitName}</td>
-                    <td className="px-6 py-3 text-sm">
+                    <td className="px-4 py-3 text-sm">{event.Payload?.name || '-'}</td>
+                    <td className="px-4 py-3 text-sm">{event.UnitName}</td>
+                    <td className="px-4 py-3 text-sm">
                       {new Date(event.FechaHora).toLocaleString()}
                     </td>
-                    <td className="px-6 py-3 text-sm">
+                    <td className="px-4 py-3 text-sm">
+                      {event.Payload?.amountGrams ? event.Payload.amountGrams.toFixed(2) : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {event.Payload?.fishCount ? event.Payload.fishCount.toFixed(0) : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
                       {event.Payload?.biomasa ? event.Payload.biomasa.toFixed(0) : '-'}
                     </td>
-                    <td className="px-6 py-3 text-sm">{event.Payload?.feedName || '-'}</td>
+                    <td className="px-4 py-3 text-sm">{event.Payload?.feedName || '-'}</td>
+                    <td className="px-4 py-3 text-sm">{event.Payload?.siloName || '-'}</td>
+                    <td className="px-4 py-3 text-sm">{event.Payload?.dif ? `${event.Payload.dif}s` : '-'}</td>
                     <td className="px-6 py-3 text-sm">
                       <div className="flex gap-2">
                         <button
@@ -276,14 +286,14 @@ export default function Events() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-gray-600">ID</p>
-                  <p className="font-mono text-sm">{selectedEvent._id}</p>
+                  <p className="font-mono text-xs break-all">{selectedEvent._id}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Source</p>
-                  <p className="font-semibold">{selectedEvent.Source}</p>
+                  <p className="text-sm text-gray-600">Centro</p>
+                  <p className="font-semibold">{selectedEvent.Payload?.name || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Unit Name</p>
+                  <p className="text-sm text-gray-600">Jaula</p>
                   <p className="font-semibold">{selectedEvent.UnitName}</p>
                 </div>
                 <div>
@@ -295,25 +305,86 @@ export default function Events() {
               </div>
 
               <div className="border-t pt-4">
-                <h3 className="font-semibold mb-3">Event Data</h3>
+                <h3 className="font-semibold mb-3">Datos de Alimentación</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {Object.entries(selectedEvent)
-                    .filter(
-                      ([key]) =>
-                        !['_id', 'Source', 'UnitName', 'FechaHora', 'IngestedAt'].includes(key)
-                    )
-                    .map(([key, value]) => (
-                      <div key={key} className="text-sm">
-                        <p className="text-gray-600">{key}</p>
-                        <p className="font-mono">{String(value)}</p>
-                      </div>
-                    ))}
+                  <div className="text-sm">
+                    <p className="text-gray-600">Gramos</p>
+                    <p className="font-mono">{selectedEvent.Payload?.amountGrams?.toFixed(2) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Peces</p>
+                    <p className="font-mono">{selectedEvent.Payload?.fishCount?.toFixed(0) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Biomasa (g)</p>
+                    <p className="font-mono">{selectedEvent.Payload?.biomasa?.toFixed(0) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Peso Promedio (g)</p>
+                    <p className="font-mono">{selectedEvent.Payload?.pesoProm?.toFixed(2) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Pellet/Fish/Min</p>
+                    <p className="font-mono">{selectedEvent.Payload?.pelletFishMin?.toFixed(4) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Pellet PK</p>
+                    <p className="font-mono">{selectedEvent.Payload?.pelletPK?.toFixed(3) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Gramos/Seg</p>
+                    <p className="font-mono">{selectedEvent.Payload?.gramsPerSec?.toFixed(2) || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Kg Ton/Min</p>
+                    <p className="font-mono">{selectedEvent.Payload?.kgTonMin?.toFixed(6) || '-'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="font-semibold mb-3">Equipamiento</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-sm">
+                    <p className="text-gray-600">Alimento</p>
+                    <p className="font-semibold">{selectedEvent.Payload?.feedName || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Silo</p>
+                    <p className="font-semibold">{selectedEvent.Payload?.siloName || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Dosificador</p>
+                    <p className="font-semibold">{selectedEvent.Payload?.doserName || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Marca</p>
+                    <p className="font-mono">{selectedEvent.Payload?.marca || 0}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <h3 className="font-semibold mb-3">Tiempos</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-sm">
+                    <p className="text-gray-600">Inicio</p>
+                    <p className="font-mono">{selectedEvent.Payload?.inicio || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Fin</p>
+                    <p className="font-mono">{selectedEvent.Payload?.fin || '-'}</p>
+                  </div>
+                  <div className="text-sm">
+                    <p className="text-gray-600">Duración</p>
+                    <p className="font-mono">{selectedEvent.Payload?.dif ? `${selectedEvent.Payload.dif}s` : '-'}</p>
+                  </div>
                 </div>
               </div>
 
               <div className="border-t pt-4">
                 <p className="text-xs text-gray-500">
-                  Ingested at: {new Date(selectedEvent.IngestedAt).toLocaleString()}
+                  Ingresado: {new Date(selectedEvent.IngestedAt).toLocaleString()}
                 </p>
               </div>
             </div>
