@@ -110,8 +110,20 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 
 	token := client.Publish(topic, cfg.QoS, false, payload)
 	
-	// Wait with timeout and check result
+	// For QoS 0, don't wait (fire and forget)
+	if cfg.QoS == 0 {
+		// Just check if publish was initiated, don't wait for completion
+		go func() {
+			if token.Error() != nil {
+				log.Printf("[MQTT] Async publish error for topic %s: %v", topic, token.Error())
+			}
+		}()
+		return nil
+	}
+	
+	// For QoS 1+, wait with timeout and check result
 	if !token.WaitTimeout(2 * time.Second) {
+		log.Printf("[MQTT] Timeout publishing to %s (payload size: %d bytes)", topic, len(payload))
 		return fmt.Errorf("publish timeout after 2s for topic %s", topic)
 	}
 	
