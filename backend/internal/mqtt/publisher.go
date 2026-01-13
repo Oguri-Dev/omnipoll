@@ -22,18 +22,29 @@ func NewPublisher(client *Client) *Publisher {
 	}
 }
 
-// MQTTMessage represents the message format for MQTT
+// MQTTMessage represents the message format for MQTT (all fields from TB_DetalleAlimentacion)
 type MQTTMessage struct {
-	TimeStampAkva       string  `json:"TimeStampAkva"`
-	TimeStampIngresado  string  `json:"TimeStampIngresado"`
-	Jaula               string  `json:"Jaula"`
-	Centro              string  `json:"Centro"`
-	Gramos              float64 `json:"Gramos"`
+	ID                  string  `json:"ID"`
+	Centro              string  `json:"Centro"`              // Name
+	Jaula               string  `json:"Jaula"`               // UnitName (cleaned)
+	TimeStampAkva       string  `json:"TimeStampAkva"`       // FechaHora
+	Dia                 string  `json:"Dia"`
+	Inicio              string  `json:"Inicio"`
+	Fin                 string  `json:"Fin"`
+	Dif                 int     `json:"Dif"`
+	Gramos              float64 `json:"Gramos"`              // AmountGrams
+	PelletFishMin       float64 `json:"PelletFishMin"`
+	Peces               float64 `json:"Peces"`               // FishCount
+	PesoPromedio        float64 `json:"PesoPromedio"`        // PesoProm
 	Biomasa             float64 `json:"Biomasa"`
-	Peces               float64 `json:"Peces"`
-	PesoPromedio        float64 `json:"PesoPromedio"`
-	Alimento            string  `json:"Alimento"`
-	Silo                string  `json:"Silo"`
+	PelletPK            float64 `json:"PelletPK"`
+	Alimento            string  `json:"Alimento"`            // Feedname
+	Silo                string  `json:"Silo"`                // SiloName
+	Dosificador         string  `json:"Dosificador"`         // DoserName
+	GramsPorSegundo     float64 `json:"GramsPorSegundo"`     // gramspersec
+	KgTonMin            float64 `json:"KgTonMin"`
+	Marca               int     `json:"Marca"`
+	TimeStampIngresado  string  `json:"TimeStampIngresado"`  // IngestedAt
 }
 
 // buildDynamicTopic creates topic: feeding/mowi/{centro}/
@@ -66,18 +77,29 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 	// Build dynamic topic based on center name
 	topic := p.buildDynamicTopic(event.Name)
 	
-	// Transform to MQTT message format
+	// Transform to MQTT message format with ALL fields
 	msg := MQTTMessage{
-		TimeStampAkva:      event.FechaHora,
-		TimeStampIngresado: event.IngestedAt.Format(time.RFC3339),
-		Jaula:              p.cleanJaula(event.UnitName),
+		ID:                 event.ID,
 		Centro:             event.Name,
+		Jaula:              p.cleanJaula(event.UnitName),
+		TimeStampAkva:      event.FechaHora,
+		Dia:                event.Dia,
+		Inicio:             event.Inicio,
+		Fin:                event.Fin,
+		Dif:                event.Dif,
 		Gramos:             event.AmountGrams,
-		Biomasa:            event.Biomasa,
+		PelletFishMin:      event.PelletFishMin,
 		Peces:              event.FishCount,
 		PesoPromedio:       event.PesoProm,
+		Biomasa:            event.Biomasa,
+		PelletPK:           event.PelletPK,
 		Alimento:           event.FeedName,
 		Silo:               event.SiloName,
+		Dosificador:        event.DoserName,
+		GramsPorSegundo:    event.GramsPerSec,
+		KgTonMin:           event.KgTonMin,
+		Marca:              event.Marca,
+		TimeStampIngresado: event.IngestedAt.Format(time.RFC3339),
 	}
 
 	payload, err := json.Marshal(msg)
