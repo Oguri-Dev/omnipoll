@@ -75,6 +75,7 @@ frontend/
 ## Features Implemented
 
 ### Dashboard Page
+
 - Real-time system status
 - Connection status for SQL Server, MQTT, MongoDB
 - Worker control buttons (Start, Stop, Reset Watermark)
@@ -82,6 +83,7 @@ frontend/
 - Ingestion rate monitoring
 
 ### Events Page
+
 - **List Events**: Paginated, filterable event list
   - Filter by source, unit name, date range
   - Configurable page size (10-250 items)
@@ -91,6 +93,7 @@ frontend/
 - **Batch Operations**: Ready for batch delete
 
 ### Configuration Page
+
 - Tabbed interface for different config sections
 - **SQL Server**: Host, port, database, user, password
 - **MQTT**: Broker, port, topic, client ID, user, password, QoS
@@ -100,6 +103,7 @@ frontend/
 - Real-time save feedback
 
 ### Logs Page
+
 - **Log Viewer**: Terminal-style log display
 - **Filtering**: Filter by log level (ERROR, WARN, INFO, DEBUG)
 - **Pagination**: Configurable page size (50-500 entries)
@@ -113,12 +117,14 @@ The frontend communicates with the backend API using the `api.ts` client:
 ### Endpoints
 
 #### Status & Worker
+
 - `GET /api/status` - Get system status
 - `POST /api/worker/start` - Start worker
 - `POST /api/worker/stop` - Stop worker
 - `POST /api/watermark/reset` - Reset watermark
 
 #### Configuration
+
 - `GET /api/config` - Get configuration
 - `PUT /api/config` - Update configuration
 - `POST /api/test/sqlserver` - Test SQL Server connection
@@ -126,6 +132,7 @@ The frontend communicates with the backend API using the `api.ts` client:
 - `POST /api/test/mongodb` - Test MongoDB connection
 
 #### Events
+
 - `GET /api/events` - List events with filters
   - Query params: `page`, `pageSize`, `source`, `unitName`, `startDate`, `endDate`, `sortBy`, `sortOrder`
 - `GET /api/events/:id` - Get event by ID
@@ -134,12 +141,14 @@ The frontend communicates with the backend API using the `api.ts` client:
 - `DELETE /api/events/batch` - Batch delete events
 
 #### Logs
+
 - `GET /api/logs` - Get logs
   - Query params: `level`, `page`, `pageSize`
 
 ## Authentication
 
 All API requests use HTTP Basic Authentication:
+
 - Username: `admin`
 - Password: `admin123` (change in `frontend/src/services/api.ts`)
 
@@ -189,45 +198,56 @@ The backend will serve the frontend at `http://localhost:8080/`
 ## Troubleshooting
 
 ### Node.js not found
+
 Ensure Node.js is installed and in your system PATH.
 
 ### npm install fails
+
 - Delete `node_modules` and `package-lock.json`
 - Try again: `npm install`
 
 ### Port 5173 already in use
+
 Vite will automatically use the next available port. Check the terminal output for the actual URL.
 
 ### API connection errors
+
 - Ensure the backend is running on `http://localhost:8080`
 - Check that credentials in `api.ts` are correct
 - Verify CORS is enabled in the backend (it should be by default)
 
 ### Styles not applying
+
 - Make sure Tailwind CSS is properly configured
 - Rebuild: `npm run build`
 
 ## Development Tips
 
 ### Hot Module Replacement (HMR)
+
 When running `npm run dev`, changes to files are reflected immediately in the browser without requiring a full refresh.
 
 ### TypeScript
+
 The project uses TypeScript for type safety. Check `src/types/index.ts` for custom types.
 
 ### React Query
+
 API data fetching is handled by React Query (@tanstack/react-query) which provides:
+
 - Automatic caching
 - Background refetching
 - Stale data handling
 - Error handling
 
 ### Tailwind CSS
+
 Styling uses Tailwind CSS utility classes. See `tailwind.config.js` for customization.
 
 ## Performance Optimization
 
 The frontend includes several optimizations:
+
 - Code splitting via Vite
 - Component lazy loading for pages
 - React Query caching

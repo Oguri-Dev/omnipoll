@@ -23,7 +23,11 @@ export default function Logs() {
   const [pageSize, setPageSize] = useState(100)
   const [level, setLevel] = useState('')
 
-  const { data: response, isLoading, refetch } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['logs', page, pageSize, level],
     queryFn: () => api.getLogs(level || undefined, page, pageSize),
     refetchInterval: 3000,
@@ -47,10 +51,7 @@ export default function Logs() {
           <Terminal className="w-6 h-6" />
           Logs
         </h1>
-        <button
-          onClick={() => refetch()}
-          className="p-2 rounded hover:bg-gray-100"
-        >
+        <button onClick={() => refetch()} className="p-2 rounded hover:bg-gray-100">
           <RefreshCw className="w-5 h-5" />
         </button>
       </div>
@@ -112,11 +113,12 @@ export default function Logs() {
       <div className="bg-gray-900 rounded-lg p-4 h-[500px] overflow-auto font-mono text-sm border border-gray-700">
         {!isLoading && logs.length > 0 ? (
           logs.map((log: LogEntry, index: number) => (
-            <div key={index} className={`py-1 hover:bg-gray-800 px-2 ${levelColors[log.level] || 'text-white'}`}>
-              <span className="text-gray-500">{new Date(log.timestamp).toLocaleTimeString()}</span>
-              {' '}
-              <span className="uppercase font-semibold">[{log.level}]</span>
-              {' '}
+            <div
+              key={index}
+              className={`py-1 hover:bg-gray-800 px-2 ${levelColors[log.level] || 'text-white'}`}
+            >
+              <span className="text-gray-500">{new Date(log.timestamp).toLocaleTimeString()}</span>{' '}
+              <span className="uppercase font-semibold">[{log.level}]</span>{' '}
               <span className="text-gray-300">{log.message}</span>
             </div>
           ))

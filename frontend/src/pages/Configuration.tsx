@@ -13,8 +13,14 @@ interface ConfigData {
 
 export default function Configuration() {
   const queryClient = useQueryClient()
-  const [activeTab, setActiveTab] = useState<'sqlserver' | 'mqtt' | 'mongodb' | 'polling'>('sqlserver')
-  const [testResult, setTestResult] = useState<{ type?: string; success?: boolean; message?: string } | null>(null)
+  const [activeTab, setActiveTab] = useState<'sqlserver' | 'mqtt' | 'mongodb' | 'polling'>(
+    'sqlserver'
+  )
+  const [testResult, setTestResult] = useState<{
+    type?: string
+    success?: boolean
+    message?: string
+  } | null>(null)
   const [successMessage, setSuccessMessage] = useState('')
 
   const { data: response, isLoading } = useQuery({
@@ -84,9 +90,21 @@ export default function Configuration() {
 
       {/* Test result */}
       {testResult && (
-        <div className={`border px-4 py-3 rounded flex items-center gap-2 ${testResult.success ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700'}`}>
-          {testResult.success ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-          <span>{testResult.type} - {testResult.message}</span>
+        <div
+          className={`border px-4 py-3 rounded flex items-center gap-2 ${
+            testResult.success
+              ? 'bg-green-100 border-green-400 text-green-700'
+              : 'bg-red-100 border-red-400 text-red-700'
+          }`}
+        >
+          {testResult.success ? (
+            <CheckCircle className="w-5 h-5" />
+          ) : (
+            <AlertCircle className="w-5 h-5" />
+          )}
+          <span>
+            {testResult.type} - {testResult.message}
+          </span>
         </div>
       )}
 
@@ -218,7 +236,7 @@ function ConfigForm({
   const [formData, setFormData] = useState(config)
 
   const handleChange = (key: string, value: any) => {
-    setFormData(prev => ({ ...prev, [key]: value }))
+    setFormData((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -233,9 +251,7 @@ function ConfigForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map((field) => (
           <div key={field.key}>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {field.label}
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
             {field.type === 'select' ? (
               <select
                 value={formData[field.key] || ''}
@@ -253,7 +269,12 @@ function ConfigForm({
               <input
                 type={field.type}
                 value={formData[field.key] || ''}
-                onChange={(e) => handleChange(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)}
+                onChange={(e) =>
+                  handleChange(
+                    field.key,
+                    field.type === 'number' ? Number(e.target.value) : e.target.value
+                  )
+                }
                 placeholder={field.label}
                 className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />

@@ -12,6 +12,7 @@
 ### 1. Backend - CRUDs Implementados (100%)
 
 #### 🏗️ Arquitectura
+
 - ✅ Repository Pattern para acceso a datos
 - ✅ Middleware stack (Auth, CORS, Logging)
 - ✅ Custom Router para soporte de IDs dinámicos
@@ -20,6 +21,7 @@
 #### 📍 Endpoints API (8 endpoints)
 
 **Eventos (5 endpoints)**
+
 ```
 GET    /api/events              - Listar con paginación y filtros
 GET    /api/events/:id          - Obtener por ID
@@ -29,23 +31,27 @@ DELETE /api/events/batch        - Batch delete
 ```
 
 **Configuración (2 endpoints)**
+
 ```
 GET    /api/config              - Obtener configuración
 PUT    /api/config              - Actualizar configuración
 ```
 
 **Logs (1 endpoint mejorado)**
+
 ```
 GET    /api/logs                - Obtener logs con filtros y paginación
 ```
 
 #### 📦 Archivos Nuevos (Backend)
+
 - `internal/admin/responses.go` - Helpers de respuestas
 - `internal/admin/event_handlers.go` - CRUD handlers
 - `internal/admin/logs_handlers.go` - Logs mejorados
 - `internal/admin/router.go` - Router personalizado
 
 #### 🔄 Mejoras en Archivos Existentes
+
 - `internal/mongo/repository.go` - +167 líneas (nuevos métodos CRUD)
 - `internal/poller/worker.go` - +40 líneas (exposición de CRUDs)
 - `internal/admin/handlers.go` - Mejorado routing
@@ -60,12 +66,14 @@ GET    /api/logs                - Obtener logs con filtros y paginación
 #### 🎨 Páginas Implementadas
 
 **Dashboard**
+
 - ✅ Tarjetas de estado (Last FechaHora, Events Today, Ingestion Rate, Total Events)
 - ✅ Monitor de conexiones (SQL Server, MQTT, MongoDB)
 - ✅ Controles de worker (Start, Stop, Reset Watermark)
 - ✅ Auto-refresh cada 5 segundos
 
 **Events**
+
 - ✅ Tabla de eventos paginada
 - ✅ Filtros avanzados (source, unitName, date range)
 - ✅ Búsqueda case-insensitive
@@ -75,6 +83,7 @@ GET    /api/logs                - Obtener logs con filtros y paginación
 - ✅ Indicador de total de registros
 
 **Configuration**
+
 - ✅ Interfaz tabbed (SQL Server, MQTT, MongoDB, Polling)
 - ✅ Formularios dinámicos por sección
 - ✅ Test de conexión para cada servicio
@@ -83,6 +92,7 @@ GET    /api/logs                - Obtener logs con filtros y paginación
 - ✅ Soporte para actualización parcial
 
 **Logs**
+
 - ✅ Visor de logs en estilo terminal
 - ✅ Filtrado por nivel (ERROR, WARN, INFO, DEBUG)
 - ✅ Paginación (50-500 items)
@@ -91,6 +101,7 @@ GET    /api/logs                - Obtener logs con filtros y paginación
 - ✅ Timestamps formateados
 
 #### 🔌 API Client Mejorado
+
 ```typescript
 ✅ getEvents(page, pageSize, filters)
 ✅ getEventById(id)
@@ -101,6 +112,7 @@ GET    /api/logs                - Obtener logs con filtros y paginación
 ```
 
 #### 📁 Archivos Modificados (Frontend)
+
 - `src/pages/Events.tsx` - +400 líneas (página completa)
 - `src/pages/Logs.tsx` - +140 líneas (mejorada)
 - `src/pages/Configuration.tsx` - +240 líneas (refactorizada)
@@ -110,14 +122,14 @@ GET    /api/logs                - Obtener logs con filtros y paginación
 
 ## 📚 Documentación Completada
 
-| Documento | Descripción | Líneas |
-|-----------|------------|--------|
-| **CRUD_IMPLEMENTATION.md** | Especificación completa de endpoints | 250+ |
-| **TESTING_GUIDE.md** | Guía con ejemplos de curl | 350+ |
-| **ARCHITECTURE.md** | Diagramas de flujo y arquitectura | 300+ |
-| **IMPLEMENTATION_SUMMARY.md** | Resumen técnico | 250+ |
-| **OMNIPOLL_CRUDS_SUMMARY.md** | Resumen ejecutivo | 350+ |
-| **FRONTEND_SETUP.md** | Guía de instalación frontend | 250+ |
+| Documento                     | Descripción                          | Líneas |
+| ----------------------------- | ------------------------------------ | ------ |
+| **CRUD_IMPLEMENTATION.md**    | Especificación completa de endpoints | 250+   |
+| **TESTING_GUIDE.md**          | Guía con ejemplos de curl            | 350+   |
+| **ARCHITECTURE.md**           | Diagramas de flujo y arquitectura    | 300+   |
+| **IMPLEMENTATION_SUMMARY.md** | Resumen técnico                      | 250+   |
+| **OMNIPOLL_CRUDS_SUMMARY.md** | Resumen ejecutivo                    | 350+   |
+| **FRONTEND_SETUP.md**         | Guía de instalación frontend         | 250+   |
 
 **Total de documentación:** 1,750+ líneas
 
@@ -148,18 +160,21 @@ Total:
 ## 🚀 Características Principales
 
 ### Seguridad
+
 - ✅ HTTP Basic Authentication en todos los endpoints
 - ✅ Validación de entrada automática
 - ✅ Contraseñas ocultas en respuestas
 - ✅ CORS configurable
 
 ### Performance
+
 - ✅ Paginación (máx 500 items)
 - ✅ Filtrado en base de datos
 - ✅ Índices de MongoDB recomendados
 - ✅ Auto-refresh configurable en frontend
 
 ### Usabilidad
+
 - ✅ Interfaz intuitiva
 - ✅ Respuestas de éxito/error claras
 - ✅ Modales para detalles
@@ -167,6 +182,7 @@ Total:
 - ✅ Error handling
 
 ### Escalabilidad
+
 - ✅ Architecture limpia (Repository Pattern)
 - ✅ Código desacoplado
 - ✅ APIs RESTful estándar
@@ -177,6 +193,7 @@ Total:
 ## 📋 Checklist Final
 
 ### Backend
+
 - [x] CRUDs implementados para Eventos
 - [x] CRUDs implementados para Configuración
 - [x] CRUDs implementados para Logs
@@ -188,6 +205,7 @@ Total:
 - [x] Documentación completa
 
 ### Frontend
+
 - [x] Página Dashboard funcional
 - [x] Página Events funcional con CRUD
 - [x] Página Configuration funcional
@@ -199,6 +217,7 @@ Total:
 - [x] Responsive design
 
 ### Documentación
+
 - [x] Guía de CRUDs
 - [x] Guía de pruebas
 - [x] Guía de arquitectura
@@ -211,6 +230,7 @@ Total:
 ## 🔧 Requisitos para Ejecutar
 
 ### Backend
+
 ```bash
 cd backend
 go build -o omnipoll.exe ./cmd/omnipoll
@@ -220,6 +240,7 @@ go build -o omnipoll.exe ./cmd/omnipoll
 Backend escucha en: `http://localhost:8080`
 
 ### Frontend (Dev)
+
 ```bash
 cd frontend
 npm install
@@ -229,6 +250,7 @@ npm run dev
 Frontend disponible en: `http://localhost:5173`
 
 ### Frontend (Prod - Servido por backend)
+
 ```bash
 cd frontend
 npm run build
@@ -241,6 +263,7 @@ cp -r dist backend/web/
 ```
 
 ### Docker
+
 ```bash
 docker-compose up -d
 ```
@@ -250,16 +273,19 @@ docker-compose up -d
 ## 📚 Guías Disponibles
 
 ### Para Desarrolladores
+
 - **CRUD_IMPLEMENTATION.md** - Referencia de endpoints
 - **ARCHITECTURE.md** - Diagramas de flujo y arquitectura
 - **TESTING_GUIDE.md** - Ejemplos de pruebas
 
 ### Para DevOps
+
 - **DEPLOY.md** - Guía de despliegue
 - **FRONTEND_SETUP.md** - Setup del frontend
 - **docker-compose.yml** - Configuración Docker
 
 ### Para Usuarios Finales
+
 - **README.md** - Introducción al proyecto
 - **OMNIPOLL_CRUDS_SUMMARY.md** - Resumen ejecutivo
 
@@ -268,11 +294,13 @@ docker-compose up -d
 ## 🎯 Casos de Uso Soportados
 
 ### Monitoreo
+
 ✅ Dashboard en tiempo real
 ✅ Monitor de conexiones
 ✅ Estadísticas de ingesta
 
 ### Gestión de Datos
+
 ✅ Listar eventos con paginación
 ✅ Buscar eventos por criterios
 ✅ Ver detalles de eventos
@@ -280,6 +308,7 @@ docker-compose up -d
 ✅ Eliminar eventos (uno o batch)
 
 ### Administración
+
 ✅ Gestionar configuración
 ✅ Probar conexiones
 ✅ Ver logs del sistema
@@ -291,16 +320,19 @@ docker-compose up -d
 ## 🔄 Próximos Pasos (Opcionales)
 
 ### Corto Plazo
+
 1. **Testing** - Ejecutar pruebas con los ejemplos proporcionados
 2. **Deployment** - Desplegar a servidor
 3. **Customización** - Ajustar según necesidades específicas
 
 ### Mediano Plazo
+
 1. **Unit Tests** - Agregar tests automatizados
 2. **Soft Deletes** - Mantener historial
 3. **Audit Logging** - Registrar cambios
 
 ### Largo Plazo
+
 1. **Rate Limiting** - Proteger endpoints
 2. **Caching** - Mejorar performance
 3. **WebSockets** - Actualizaciones en tiempo real
@@ -319,21 +351,25 @@ docker-compose up -d
 ## 🏆 Logros Alcanzados
 
 ✅ **Backend completo y funcional**
+
 - 8 endpoints REST implementados
 - Paginación y filtrado avanzado
 - Autenticación y validación
 
 ✅ **Frontend moderno y responsivo**
+
 - 4 páginas completamente funcionales
 - Integración total con API
 - Interfaz intuitiva
 
 ✅ **Documentación exhaustiva**
+
 - 1,750+ líneas de documentación
 - Guías paso a paso
 - Ejemplos prácticos
 
 ✅ **Listo para producción**
+
 - Código compilable sin errores
 - Arquitectura escalable
 - Seguridad implementada
