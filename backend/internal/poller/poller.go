@@ -115,10 +115,11 @@ func (p *Poller) Poll(ctx context.Context) error {
 	if len(changedEvents) > 0 {
 		log.Printf("Attempting to publish %d changed events to MQTT", len(changedEvents))
 		if err := p.mqttPub.PublishBatch(changedEvents); err != nil {
-			log.Printf("ERROR: Failed to publish to MQTT: %v", err)
-			return err
+			log.Printf("Warning: MQTT publish partial failure: %v", err)
+			// Don't return error - continue with MongoDB persistence
+		} else {
+			log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(normalizedEvents))
 		}
-		log.Printf("Published %d changed events to MQTT (fetched %d total)", len(changedEvents), len(normalizedEvents))
 	} else {
 		log.Printf("No changes detected (fetched %d records)", len(normalizedEvents))
 	}

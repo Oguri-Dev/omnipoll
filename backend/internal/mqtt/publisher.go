@@ -3,6 +3,7 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -117,11 +118,25 @@ func (p *Publisher) Publish(event events.NormalizedEvent) error {
 
 // PublishBatch publishes multiple events to MQTT
 func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error {
-	for _, event := range evts {
+	successCount := 0
+	errorCount := 0
+	
+	for i, event := range evts {
 		if err := p.Publish(event); err != nil {
-			return err
+			errorCount++
+			// Log error but continue with next event
+			if errorCount <= 5 {
+				log.Printf("MQTT publish error for event %d (ID: %s): %v", i+1, event.ID, err)
+			}
+		} else {
+			successCount++
 		}
 	}
+	
+	if errorCount > 0 {
+		return fmt.Errorf("published %d/%d events (%d errors)", successCount, len(evts), errorCount)
+	}
+	
 	return nil
 }
 
