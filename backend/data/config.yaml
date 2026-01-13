@@ -1,26 +1,26 @@
 sqlServer:
-  host: host.docker.internal
-  port: 1433
-  database: FTFeeding
-  user: sa
-  password: ''
+    host: localhost
+    port: 1433
+    database: FTFeeding
+    user: sa
+    password: ""
 mqtt:
-  broker: mosquitto
-  port: 1883
-  topic: ftfeeding/akva/detalle
-  clientId: omnipoll-worker
-  user: ''
-  password: ''
-  qos: 1
+    broker: localhost
+    port: 1883
+    topic: ftfeeding/akva/detalle
+    clientId: omnipoll-worker
+    user: ""
+    password: ""
+    qos: 1
 mongodb:
-  uri: mongodb://mongodb:27017
-  database: omnipoll
-  collection: historical_events
+    uri: mongodb://localhost:27017
+    database: omnipoll
+    collection: historical_events
 polling:
-  intervalMs: 5000
-  batchSize: 100
+    intervalMs: 5000
+    batchSize: 100
 admin:
-  host: 0.0.0.0
-  port: 8080
-  username: admin
-  password: 'admin123'
+    host: 127.0.0.1
+    port: 8080
+    username: admin
+    password: encrypted:Z5ksWW4eVfJrtkNgBtTJdU6RAyOU9Y7bANMgE7W9AfW7

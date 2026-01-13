@@ -81,6 +81,7 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		cfg := s.configManager.Get()
+		log.Printf("[config] GET: Returning MQTT config: %+v", cfg.MQTT)
 		// Mask passwords in response
 		cfg.SQLServer.Password = maskPassword(cfg.SQLServer.Password)
 		cfg.MQTT.Password = maskPassword(cfg.MQTT.Password)
@@ -92,12 +93,17 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPut:
 		var cfg config.Config
 		if err := json.NewDecoder(r.Body).Decode(&cfg); err != nil {
+			log.Printf("[config] Error decoding JSON: %v", err)
 			http.Error(w, "Invalid JSON: "+err.Error(), http.StatusBadRequest)
 			return
 		}
+		log.Printf("[config] Received config update: MQTT=%+v, MongoDB=%+v, SQLServer=%+v, Polling=%+v", 
+			cfg.MQTT, cfg.MongoDB, cfg.SQLServer, cfg.Polling)
+
+		// Get current config to preserve unmodified fields
+		currentCfg := s.configManager.Get()
 
 		// If password is masked, keep the original
-		currentCfg := s.configManager.Get()
 		if cfg.SQLServer.Password == "********" {
 			cfg.SQLServer.Password = currentCfg.SQLServer.Password
 		}
@@ -108,10 +114,68 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 			cfg.Admin.Password = currentCfg.Admin.Password
 		}
 
+		// Validate that required fields are not empty
+		if cfg.MQTT.Broker == "" {
+			cfg.MQTT.Broker = currentCfg.MQTT.Broker
+		}
+		if cfg.MQTT.Port == 0 {
+			cfg.MQTT.Port = currentCfg.MQTT.Port
+		}
+		if cfg.MQTT.Topic == "" {
+			cfg.MQTT.Topic = currentCfg.MQTT.Topic
+		}
+		if cfg.MQTT.ClientID == "" {
+			cfg.MQTT.ClientID = currentCfg.MQTT.ClientID
+		}
+
+		if cfg.SQLServer.Host == "" {
+			cfg.SQLServer.Host = currentCfg.SQLServer.Host
+		}
+		if cfg.SQLServer.Port == 0 {
+			cfg.SQLServer.Port = currentCfg.SQLServer.Port
+		}
+		if cfg.SQLServer.Database == "" {
+			cfg.SQLServer.Database = currentCfg.SQLServer.Database
+		}
+		if cfg.SQLServer.User == "" {
+			cfg.SQLServer.User = currentCfg.SQLServer.User
+		}
+
+		if cfg.MongoDB.URI == "" {
+			cfg.MongoDB.URI = currentCfg.MongoDB.URI
+		}
+		if cfg.MongoDB.Database == "" {
+			cfg.MongoDB.Database = currentCfg.MongoDB.Database
+		}
+		if cfg.MongoDB.Collection == "" {
+			cfg.MongoDB.Collection = currentCfg.MongoDB.Collection
+		}
+
+		if cfg.Polling.IntervalMS == 0 {
+			cfg.Polling.IntervalMS = currentCfg.Polling.IntervalMS
+		}
+		if cfg.Polling.BatchSize == 0 {
+			cfg.Polling.BatchSize = currentCfg.Polling.BatchSize
+		}
+
+		if cfg.Admin.Host == "" {
+			cfg.Admin.Host = currentCfg.Admin.Host
+		}
+		if cfg.Admin.Port == 0 {
+			cfg.Admin.Port = currentCfg.Admin.Port
+		}
+		if cfg.Admin.Username == "" {
+			cfg.Admin.Username = currentCfg.Admin.Username
+		}
+
+		log.Printf("[config] Validated config: MQTT=%+v", cfg.MQTT)
+		log.Printf("[config] Saving config...")
 		if err := s.configManager.Update(cfg); err != nil {
+			log.Printf("[config] Error saving config: %v", err)
 			http.Error(w, "Failed to save config: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
+		log.Printf("[config] Config saved successfully")
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
