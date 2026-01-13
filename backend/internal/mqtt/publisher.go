@@ -121,13 +121,28 @@ func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error {
 	successCount := 0
 	errorCount := 0
 	total := len(evts)
+	cfg := p.client.GetConfig()
+	
+	// Log broker info once at the start
+	log.Printf("[MQTT] Starting batch publish to broker: %s:%d (TLS: %v, QoS: %d)", 
+		cfg.Broker, cfg.Port, cfg.UseTLS, cfg.QoS)
 	
 	for i, event := range evts {
+		// Build topic for logging
+		topic := p.buildDynamicTopic(event.Name)
+		
+		// Detailed logging for first 3 events only
+		if i < 3 {
+			log.Printf("[MQTT] Event %d/%d - Topic: %s", i+1, total, topic)
+			log.Printf("[MQTT] Event %d/%d - Data: Centro=%s, Jaula=%s, Gramos=%.2f, Peces=%.0f, Biomasa=%.0f, ID=%s", 
+				i+1, total, event.Name, p.cleanJaula(event.UnitName), event.AmountGrams, event.FishCount, event.Biomasa, event.ID)
+		}
+		
 		if err := p.Publish(event); err != nil {
 			errorCount++
 			// Log first 5 errors in detail
 			if errorCount <= 5 {
-				log.Printf("MQTT publish error for event %d/%d (ID: %s): %v", i+1, total, event.ID, err)
+				log.Printf("[MQTT] ERROR event %d/%d (ID: %s, Topic: %s): %v", i+1, total, event.ID, topic, err)
 			}
 		} else {
 			successCount++
@@ -135,11 +150,11 @@ func (p *Publisher) PublishBatch(evts []events.NormalizedEvent) error {
 		
 		// Log progress every 10 events
 		if (i+1)%10 == 0 {
-			log.Printf("MQTT publish progress: %d/%d events (%d success, %d errors)", i+1, total, successCount, errorCount)
+			log.Printf("[MQTT] Progress: %d/%d events (%d success, %d errors)", i+1, total, successCount, errorCount)
 		}
 	}
 	
-	log.Printf("MQTT batch complete: %d/%d events published successfully", successCount, total)
+	log.Printf("[MQTT] Batch complete: %d/%d events published successfully (%d errors)", successCount, total, errorCount)
 	
 	if errorCount > 0 {
 		return fmt.Errorf("published %d/%d events (%d errors)", successCount, len(evts), errorCount)
