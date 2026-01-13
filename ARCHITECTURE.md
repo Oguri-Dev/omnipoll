@@ -98,6 +98,7 @@
 ## Estructura de Datos
 
 ### MongoDB Document (HistoricalEvent)
+
 ```json
 {
   "_id": "Akva:12345",
@@ -128,6 +129,7 @@
 ```
 
 ### QueryOptions (Filtrado y Paginación)
+
 ```go
 type QueryOptions struct {
   Page      int        // 1-based page number
@@ -142,10 +144,13 @@ type QueryOptions struct {
 ```
 
 ### API Response Format
+
 ```json
 {
   "success": true,
-  "data": [ /* array de resultados */ ],
+  "data": [
+    /* array de resultados */
+  ],
   "page": 1,
   "pages": 10,
   "total": 500,
@@ -156,6 +161,7 @@ type QueryOptions struct {
 ## Flujos de Casos de Uso
 
 ### 1. Listar Eventos con Filtros
+
 ```
 Cliente: GET /api/events?source=Akva&unitName=Tank&page=2&pageSize=50
    ↓
@@ -175,6 +181,7 @@ Cliente: JSON con datos paginados
 ```
 
 ### 2. Obtener Evento Individual
+
 ```
 Cliente: GET /api/events/Akva:12345
    ↓
@@ -192,6 +199,7 @@ Cliente: JSON con evento o 404 si no existe
 ```
 
 ### 3. Actualizar Evento
+
 ```
 Cliente: PUT /api/events/Akva:12345
 Body: { payload: { biomasa: 1600.0 } }
@@ -210,6 +218,7 @@ Cliente: JSON con evento actualizado
 ```
 
 ### 4. Eliminar Evento
+
 ```
 Cliente: DELETE /api/events/Akva:12345
    ↓
@@ -227,6 +236,7 @@ Cliente: { success: true, message: "..." }
 ```
 
 ### 5. Batch Delete
+
 ```
 Cliente: DELETE /api/events/batch
 Body: { source: "Akva", beforeDate: "2024-01-01T00:00:00Z" }
@@ -246,27 +256,27 @@ Cliente: { success: true, deleted: 450 }
 
 ## Tabla de Endpoints
 
-| Método | Endpoint | Handler | CRUD | Descripción |
-|--------|----------|---------|------|-------------|
-| GET | /api/events | handleEventsGet | READ | Listar con paginación/filtros |
-| GET | /api/events/:id | handleEventGetByID | READ | Obtener uno por ID |
-| PUT | /api/events/:id | handleEventUpdate | UPDATE | Actualizar evento |
-| DELETE | /api/events/:id | handleEventDelete | DELETE | Eliminar evento |
-| DELETE | /api/events/batch | handleEventsBatch | DELETE | Batch delete |
-| GET | /api/config | handleConfig | READ | Obtener configuración |
-| PUT | /api/config | handleConfig | UPDATE | Actualizar configuración |
-| GET | /api/logs | handleLogsImproved | READ | Listar logs con filtros |
-| GET | /api/status | handleStatus | READ | Estado del sistema |
+| Método | Endpoint          | Handler            | CRUD   | Descripción                   |
+| ------ | ----------------- | ------------------ | ------ | ----------------------------- |
+| GET    | /api/events       | handleEventsGet    | READ   | Listar con paginación/filtros |
+| GET    | /api/events/:id   | handleEventGetByID | READ   | Obtener uno por ID            |
+| PUT    | /api/events/:id   | handleEventUpdate  | UPDATE | Actualizar evento             |
+| DELETE | /api/events/:id   | handleEventDelete  | DELETE | Eliminar evento               |
+| DELETE | /api/events/batch | handleEventsBatch  | DELETE | Batch delete                  |
+| GET    | /api/config       | handleConfig       | READ   | Obtener configuración         |
+| PUT    | /api/config       | handleConfig       | UPDATE | Actualizar configuración      |
+| GET    | /api/logs         | handleLogsImproved | READ   | Listar logs con filtros       |
+| GET    | /api/status       | handleStatus       | READ   | Estado del sistema            |
 
 ## Índices de MongoDB Recomendados
 
 ```javascript
 // Crear índices para optimizar queries
-db.historical_events.createIndex({ "fechaHora": -1 })
-db.historical_events.createIndex({ "source": 1 })
-db.historical_events.createIndex({ "unitName": 1 })
-db.historical_events.createIndex({ "ingestedAt": -1 })
-db.historical_events.createIndex({ "source": 1, "fechaHora": -1 })
+db.historical_events.createIndex({ fechaHora: -1 })
+db.historical_events.createIndex({ source: 1 })
+db.historical_events.createIndex({ unitName: 1 })
+db.historical_events.createIndex({ ingestedAt: -1 })
+db.historical_events.createIndex({ source: 1, fechaHora: -1 })
 ```
 
 ## Seguridad
@@ -286,4 +296,3 @@ db.historical_events.createIndex({ "source": 1, "fechaHora": -1 })
 - ✅ Índices recomendados para queries comunes
 - ⏳ Caching (TODO)
 - ⏳ Compression (TODO)
-
