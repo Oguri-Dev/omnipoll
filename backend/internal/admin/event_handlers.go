@@ -1,63 +1,15 @@
 package admin
 
-// EventResponse is the format returned to the frontend
-type EventResponse struct {
-	ID            string    `json:"_id"`
-	Source        string    `json:"source"`
-	FechaHora     string    `json:"fechaHora"`
-	UnitName      string    `json:"unitName"`
-	Name          interface{} `json:"name,omitempty"`
-	Dia           interface{} `json:"dia,omitempty"`
-	Inicio        interface{} `json:"inicio,omitempty"`
-	Fin           interface{} `json:"fin,omitempty"`
-	Dif           interface{} `json:"dif,omitempty"`
-	AmountGrams   interface{} `json:"amountGrams,omitempty"`
-	PelletFishMin interface{} `json:"pelletFishMin,omitempty"`
-	FishCount     interface{} `json:"fishCount,omitempty"`
-	PesoProm      interface{} `json:"pesoProm,omitempty"`
-	Biomasa       interface{} `json:"biomasa,omitempty"`
-	PelletPK      interface{} `json:"pelletPK,omitempty"`
-	FeedName      interface{} `json:"feedName,omitempty"`
-	SiloName      interface{} `json:"siloName,omitempty"`
-	DoserName     interface{} `json:"doserName,omitempty"`
-	GramsPerSec   interface{} `json:"gramsPerSec,omitempty"`
-	KgTonMin      interface{} `json:"kgTonMin,omitempty"`
-	Marca         interface{} `json:"marca,omitempty"`
-	IngestedAt    string    `json:"ingestedAt"`
-}
+import (
+	"encoding/json"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
-// historyToResponse converts MongoDB HistoricalEvent to API response format
-func historyToResponse(he mongo.HistoricalEvent) EventResponse {
-	resp := EventResponse{
-		ID:         he.ID,
-		Source:     he.Source,
-		FechaHora:  he.FechaHora.Format(time.RFC3339),
-		UnitName:   he.UnitName,
-		IngestedAt: he.IngestedAt.Format(time.RFC3339),
-	}
-
-	if he.Payload != nil {
-		resp.Name = he.Payload["name"]
-		resp.Dia = he.Payload["dia"]
-		resp.Inicio = he.Payload["inicio"]
-		resp.Fin = he.Payload["fin"]
-		resp.Dif = he.Payload["dif"]
-		resp.AmountGrams = he.Payload["amountGrams"]
-		resp.PelletFishMin = he.Payload["pelletFishMin"]
-		resp.FishCount = he.Payload["fishCount"]
-		resp.PesoProm = he.Payload["pesoProm"]
-		resp.Biomasa = he.Payload["biomasa"]
-		resp.PelletPK = he.Payload["pelletPK"]
-		resp.FeedName = he.Payload["feedName"]
-		resp.SiloName = he.Payload["siloName"]
-		resp.DoserName = he.Payload["doserName"]
-		resp.GramsPerSec = he.Payload["gramsPerSec"]
-		resp.KgTonMin = he.Payload["kgTonMin"]
-		resp.Marca = he.Payload["marca"]
-	}
-
-	return resp
-}
+	"github.com/omnipoll/backend/internal/mongo"
+)
 
 // handleEventsGet returns a list of events with filtering and pagination
 func (s *Server) handleEventsGet(w http.ResponseWriter, r *http.Request) {
@@ -136,13 +88,7 @@ func (s *Server) handleEventsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Transform to response format
-	responseData := make([]EventResponse, len(result.Data))
-	for i, evt := range result.Data {
-		responseData[i] = historyToResponse(evt)
-	}
-
-	WritePaginated(w, http.StatusOK, responseData, result.Page, result.TotalPages, result.Total, result.PageSize)
+	WritePaginated(w, http.StatusOK, result.Data, result.Page, result.TotalPages, result.Total, result.PageSize)
 }
 
 // handleEventByID handles GET, PUT, DELETE for a single event
