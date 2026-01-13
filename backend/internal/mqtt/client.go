@@ -1,7 +1,9 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -15,12 +17,14 @@ type Client struct {
 	client   paho.Client
 	config   config.MQTTConfig
 	connected bool
+	stopHeartbeat chan struct{}
 }
 
 // NewClient creates a new MQTT client
 func NewClient(cfg config.MQTTConfig) *Client {
 	return &Client{
 		config: cfg,
+		stopHeartbeat: make(chan struct{}),
 	}
 }
 
@@ -78,6 +82,9 @@ func (c *Client) Connect() error {
 	c.connected = true
 	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
 	
+	// Start heartbeat goroutine
+	go c.startHeartbeat()
+	
 	return nil
 }
 
@@ -85,6 +92,9 @@ func (c *Client) Connect() error {
 func (c *Client) Disconnect() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	// Stop heartbeat goroutine
+	close(c.stopHeartbeat)
 
 	if c.client != nil && c.client.IsConnected() {
 		c.client.Disconnect(1000)
@@ -113,6 +123,49 @@ func (c *Client) GetClient() paho.Client {
 // GetConfig returns the MQTT configuration
 func (c *Client) GetConfig() config.MQTTConfig {
 	return c.config
+}
+
+// startHeartbeat sends periodic heartbeat messages to MQTT broker
+func (c *Client) startHeartbeat() {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			c.sendHeartbeat()
+		case <-c.stopHeartbeat:
+			log.Printf("[MQTT Heartbeat] Stopped")
+			return
+		}
+	}
+}
+
+// sendHeartbeat sends a single heartbeat message
+func (c *Client) sendHeartbeat() {
+	if c.client == nil || !c.client.IsConnected() {
+		return
+	}
+
+	heartbeat := map[string]interface{}{
+		"status":    "connected",
+		"timestamp": time.Now().Format(time.RFC3339),
+		"clientId":  c.config.ClientID,
+		"version":   "1.0",
+	}
+
+	payload, err := json.Marshal(heartbeat)
+	if err != nil {
+		return
+	}
+
+	topic := "feeding/mowi/status"
+	
+	// Fire-and-forget with QoS 0
+	token := c.client.Publish(topic, 0, false, payload)
+	token.Wait() // Don't block - just ensure message is queued
+	
+	log.Printf("[MQTT Heartbeat] ✓ Sent to %s", topic)
 }
 
 // TestConnection tests the MQTT connection
