@@ -85,6 +85,13 @@ func (c *Client) Connect() error {
 	c.client = client
 	c.connected = true
 	fmt.Printf("[MQTT Client] Connection established to %s\n", broker)
+	
+	// Wait a moment for connection to be fully ready, then send heartbeat
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		c.sendHeartbeat()
+	}()
+	
 	return nil
 }
 
