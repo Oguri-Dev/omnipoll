@@ -185,7 +185,11 @@ func (c *Client) sendHeartbeat() {
 		return
 	}
 
-	topic := "feeding/mowi/status"
+	topicPrefix := c.config.TopicPrefix
+	if topicPrefix == "" {
+		topicPrefix = "feeding/mowi" // default
+	}
+	topic := topicPrefix + "/status"
 	
 	// Fire-and-forget with QoS 0
 	token := c.client.Publish(topic, 0, false, payload)

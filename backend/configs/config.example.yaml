@@ -12,6 +12,7 @@ mqtt:
   broker: 'localhost'
   port: 1883
   topic: 'ftfeeding/akva/detalle'
+  topicPrefix: 'feeding/mowi'  # Topic prefix for MQTT messages (e.g., feeding/mowi/center_name/)
   clientId: 'omnipoll-worker'
   user: ''
   password: ''

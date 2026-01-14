@@ -48,7 +48,7 @@ type MQTTMessage struct {
 	TimeStampIngresado  string  `json:"TimeStampIngresado"`  // IngestedAt
 }
 
-// buildDynamicTopic creates topic: feeding/mowi/{centro}/
+// buildDynamicTopic creates topic: {topicPrefix}/{centro}/
 func (p *Publisher) buildDynamicTopic(centerName string) string {
 	// Normalize center name: lowercase, replace spaces with underscores
 	normalized := strings.ToLower(centerName)
@@ -56,7 +56,13 @@ func (p *Publisher) buildDynamicTopic(centerName string) string {
 	// Remove special characters except underscores
 	reg := regexp.MustCompile(`[^a-z0-9_]`)
 	normalized = reg.ReplaceAllString(normalized, "")
-	return fmt.Sprintf("feeding/mowi/%s/", normalized)
+	
+	topicPrefix := p.client.config.TopicPrefix
+	if topicPrefix == "" {
+		topicPrefix = "feeding/mowi" // default
+	}
+	
+	return fmt.Sprintf("%s/%s/", topicPrefix, normalized)
 }
 
 // cleanJaula removes letters, spaces, and special characters from unit name

@@ -18,14 +18,15 @@ type SQLServerConfig struct {
 }
 
 type MQTTConfig struct {
-	Broker   string `json:"broker" yaml:"broker"`
-	Port     int    `json:"port" yaml:"port"`
-	Topic    string `json:"topic" yaml:"topic"`
-	ClientID string `json:"clientId" yaml:"clientId"`
-	User     string `json:"user" yaml:"user"`
-	Password string `json:"password" yaml:"password"` // Encrypted at rest
-	QoS      byte   `json:"qos" yaml:"qos"`
-	UseTLS   bool   `json:"useTLS" yaml:"useTLS"`
+	Broker      string `json:"broker" yaml:"broker"`
+	Port        int    `json:"port" yaml:"port"`
+	Topic       string `json:"topic" yaml:"topic"`
+	TopicPrefix string `json:"topicPrefix" yaml:"topicPrefix"` // e.g., "feeding/mowi"
+	ClientID    string `json:"clientId" yaml:"clientId"`
+	User        string `json:"user" yaml:"user"`
+	Password    string `json:"password" yaml:"password"` // Encrypted at rest
+	QoS         byte   `json:"qos" yaml:"qos"`
+	UseTLS      bool   `json:"useTLS" yaml:"useTLS"`
 }
 
 type MongoDBConfig struct {
