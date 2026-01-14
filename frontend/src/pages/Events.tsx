@@ -34,9 +34,16 @@ export default function Events() {
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(50)
+  
+  // Get today's date in ISO format for filtering
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const todayISO = today.toISOString()
+  
   const [filters, setFilters] = useState({
     centro: '',
     jaula: '',
+    startDate: todayISO, // Filter to today onwards
   })
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showModal, setShowModal] = useState(false)
