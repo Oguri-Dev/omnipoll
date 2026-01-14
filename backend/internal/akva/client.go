@@ -78,6 +78,14 @@ func (c *Client) FetchNewRecords(ctx context.Context, lastFechaHora time.Time, s
 		return nil, fmt.Errorf("not connected")
 	}
 
+	// If watermark is zero/empty (fresh start), use a date far in the past to get oldest records
+	// Otherwise use the watermark timestamp to find new records
+	queryTimestamp := lastFechaHora
+	if lastFechaHora.IsZero() || (lastFechaHora.Year() == 1 && lastFechaHora.Month() == 1) {
+		// Fresh start - query from year 2000 onwards
+		queryTimestamp = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	}
+
 	query := `
 		SELECT TOP (@batchSize)
 			ID,
@@ -107,7 +115,7 @@ func (c *Client) FetchNewRecords(ctx context.Context, lastFechaHora time.Time, s
 
 	rows, err := c.db.QueryContext(ctx, query,
 		sql.Named("batchSize", batchSize),
-		sql.Named("lastFechaHora", lastFechaHora),
+		sql.Named("lastFechaHora", queryTimestamp),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("query failed: %w", err)
