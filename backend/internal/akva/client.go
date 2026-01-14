@@ -78,12 +78,12 @@ func (c *Client) FetchNewRecords(ctx context.Context, lastFechaHora time.Time, s
 		return nil, fmt.Errorf("not connected")
 	}
 
-	// If watermark is zero/empty (fresh start), use a date far in the past to get oldest records
+	// If watermark is zero/empty (fresh start), start from last 5 days
 	// Otherwise use the watermark timestamp to find new records
 	queryTimestamp := lastFechaHora
 	if lastFechaHora.IsZero() || (lastFechaHora.Year() == 1 && lastFechaHora.Month() == 1) {
-		// Fresh start - query from year 2000 onwards
-		queryTimestamp = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+		// Fresh start - query from 5 days ago
+		queryTimestamp = time.Now().UTC().AddDate(0, 0, -5)
 	}
 
 	query := `
