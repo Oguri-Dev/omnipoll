@@ -142,7 +142,18 @@ func (m *WatermarkManager) Reset() error {
 		return err
 	}
 
-	return nil
+	// Ensure the empty watermark is persisted for next load
+	dir := filepath.Dir(m.path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	data, err := json.MarshalIndent(m.watermark, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(m.path, data, 0644)
 }
 
 // GetPath returns the watermark file path
