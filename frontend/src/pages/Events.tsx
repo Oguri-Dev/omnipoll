@@ -50,7 +50,8 @@ export default function Events() {
   } = useQuery({
     queryKey: ['events', page, pageSize, filters],
     queryFn: () => api.getEvents(page, pageSize, filters),
-    refetchInterval: 5000,
+    refetchInterval: 3000,
+    staleTime: 0, // Always treat as stale to force fresh data
   })
 
   const deleteEventMutation = useMutation({
