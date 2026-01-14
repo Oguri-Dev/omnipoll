@@ -103,31 +103,18 @@ func (p *Poller) Poll(ctx context.Context) error {
 	// Convert to normalized events
 	normalizedEvents := akva.ToNormalizedEvents(records)
 
-	// Filter only changed/new events for MQTT publishing
-	var changedEvents []events.NormalizedEvent
-	if p.mongoRepo != nil {
-		var err error
-		changedEvents, err = p.filterChangedEvents(ctx, normalizedEvents)
-		if err != nil {
-			log.Printf("[Poller] WARNING: failed to filter changed events: %v", err)
-			changedEvents = normalizedEvents // Fallback: publish all if filtering fails
-		}
-	} else {
-		log.Printf("[Poller] WARNING: MongoDB not available, publishing all events without filtering")
-		changedEvents = normalizedEvents
-	}
-
-	// Publish only changed events to MQTT
-	if len(changedEvents) > 0 {
-		log.Printf("[Poller] Publishing %d changed events to MQTT (out of %d total)", len(changedEvents), len(normalizedEvents))
-		if err := p.mqttPub.PublishBatch(changedEvents); err != nil {
+	// For MQTT: Publish all newly fetched records (based on watermark, they're guaranteed new)
+	// MongoDB filtering is for deduplication only, not for MQTT publishing
+	if len(normalizedEvents) > 0 {
+		log.Printf("[Poller] Publishing %d new records to MQTT (from SQL watermark)", len(normalizedEvents))
+		if err := p.mqttPub.PublishBatch(normalizedEvents); err != nil {
 			log.Printf("[Poller] WARNING: MQTT publish error: %v", err)
 			// Don't return error - continue with MongoDB persistence
 		} else {
-			log.Printf("[Poller] ✓ Published %d changed events to MQTT", len(changedEvents))
+			log.Printf("[Poller] ✓ Published %d records to MQTT", len(normalizedEvents))
 		}
 	} else {
-		log.Printf("[Poller] No changes detected in %d fetched records", len(normalizedEvents))
+		log.Printf("[Poller] No new records to publish")
 	}
 
 	// Persist to MongoDB (skip if not connected)
